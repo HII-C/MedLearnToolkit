@@ -27,13 +27,10 @@ for item in rows:
     count_dict[item[0]] = item[1]
 
 response = requests.post(post_url)
-x  = (xmltodict.parse(response.content))
+parsed_response  = (xmltodict.parse(response.content))
 
-print(x['ePostResult']['WebEnv'])
-# print(x['PubmedArticleSet']['PubmedArticle']['MedlineCitation']['MeshHeadingList']['MeshHeading'][5]['DescriptorName']['#text'])
-y = requests.get(get_url.format(x['ePostResult']['WebEnv'], x['ePostResult']['QueryKey']))
-get_response = (xmltodict.parse(y.content))
-# print(get_response['PubmedArticleSet']['PubmedArticle'])
+raw_response = requests.get(get_url.format(parsed_response['ePostResult']['WebEnv'], parsed_response['ePostResult']['QueryKey']))
+get_response = (xmltodict.parse(raw_response.content))
 query_base = "INSERT into mesh_terms (paper_id, count, mesh_terms, article_type) values(\"{}\", {}, \"{}\", \"{}\")"
 
 for index, item in enumerate(get_response['PubmedArticleSet']['PubmedArticle']):
@@ -42,7 +39,7 @@ for index, item in enumerate(get_response['PubmedArticleSet']['PubmedArticle']):
     article_type_list = list()
     try:
         for indx, itm in enumerate(get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['MeshHeadingList']['MeshHeading']):
-            print(get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['MeshHeadingList']['MeshHeading'][indx]['DescriptorName']['#text'])
+
             list_of_mesh.append(get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['MeshHeadingList']['MeshHeading'][indx]['DescriptorName']['#text'])
     except KeyError as ex1:
         print(("No {}\n").format(ex1))
@@ -52,17 +49,14 @@ for index, item in enumerate(get_response['PubmedArticleSet']['PubmedArticle']):
             article_type_list.append(get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['Article']['PublicationTypeList']['PublicationType'][entry]['#text'])
     except KeyError as ex2:
         article_type_list.append(get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['Article']['PublicationTypeList']['PublicationType']['#text'])
-    print('\n')
+
     article_type_string = (' | '.join(article_type_list)).replace('[', '').replace(']' ,'')
     if (len(list_of_mesh) <= 0):
         dbCur.execute(query_base.format(article_id, count_dict[int(article_id)], 'None', article_type_string))
         db.commit()
     else:
         x_1 = (' | '.join(list_of_mesh)).replace('[', '').replace(']' ,'')
-        # query_base = "INSERT into mesh_terms (paper_id, mesh_terms) values(\"{}\", \"{}\")"
-        # this_insert = query_base.format(str(article_id), str(list_of_mesh[0]))
-        # print(this_insert)
+        
         dbCur.execute(query_base.format(str(article_id), count_dict[int(article_id)], str(x_1), str(article_type_string)))
         db.commit()
-# print(y)
-# print(json.dumps(xmltodict.parse(y.content)))
+
