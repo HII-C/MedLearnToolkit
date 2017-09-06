@@ -8,14 +8,12 @@ db_name = input()
 db = pymysql.connect('localhost', 'root', password, db_name)
 dbCur = db.cursor()
 
-dbCur.execute(('''CREATE TABLE IF NOT EXISTS {} (paper_id real, count int, mesh_terms ENUM)''').format('document_count'))
+dbCur.execute(('''CREATE TABLE IF NOT EXISTS {} (paper_id real, count int)''').format('document_count'))
 db.commit()
 
 dbCur.execute('SELECT * FROM PREDICATION LIMIT 10000')
 
 predication_rows = dbCur.fetchall()
-print(predication_rows[0])
-exit()
 
 dict_of_id = dict()
 for index, item in enumerate(predication_rows):
