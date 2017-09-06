@@ -9,10 +9,9 @@ import xmltodict
 
 password = getpass.getpass()
 db_name = input()
-db = pymysql.connect('localhost', 'root', password, db_input)
+db = pymysql.connect('localhost', 'root', password, db_name)
 dbCur = db.cursor()
 
-dbCur.execute('DROP table mesh_terms;')
 dbCur.execute(('CREATE TABLE IF NOT EXISTS {} (paper_id text, count integer, mesh_terms text, article_type text)').format('mesh_terms'))
 dbCur.execute('SELECT * FROM document_count LIMIT 500')
 rows = dbCur.fetchall()
