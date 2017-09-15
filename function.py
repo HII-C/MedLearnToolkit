@@ -27,11 +27,12 @@ def patientToVector():
     visit_count = 0
     for patient_id in patient_matrix.keys():
         for visit_id in patient_matrix[patient_id].keys():
-            for code in code_dict.keys():
-                if code in patient_matrix[patient_matrix][visit_id]:
-                    sparse_matrix[visit_count].append(1)
-                else:
-                    sparse_matrix[visit_count].append(0)
+            for c in patient_matrix[patient_id][visit_id]:
+                for code in code_dict.keys():
+                    if code in patient_matrix[patient_matrix][visit_id][c]:
+                        sparse_matrix[visit_count].append(1)
+                    else:
+                        sparse_matrix[visit_count].append(0)
             visit_count += 1
 
     print(sparse_matrix)
