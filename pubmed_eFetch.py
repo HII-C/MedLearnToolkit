@@ -53,4 +53,3 @@ for index, item in enumerate(get_response['PubmedArticleSet']['PubmedArticle']):
 
 		dbCur.execute(query_base.format(str(article_id), count_dict[int(article_id)], str(x_1), str(article_type_string)))
 		db.commit()
-
