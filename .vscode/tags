@@ -4,34 +4,43 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-article_id	../pubmed_eFetch.py	/^    article_id = get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['PMID']['#text']$/;"	kind:variable	line:36
-db	../dbReduc.py	/^db = pymysql.connect('localhost', 'root', password, db_name)$/;"	kind:variable	line:8
-db	../pubmed_eFetch.py	/^db = pymysql.connect('localhost', 'root', password, db_name)$/;"	kind:variable	line:12
-dbCur	../dbReduc.py	/^dbCur = db.cursor()$/;"	kind:variable	line:9
-dbCur	../pubmed_eFetch.py	/^dbCur = db.cursor()$/;"	kind:variable	line:13
+anchorCode.py	../anchorCode.py	1;"	kind:file	line:1
+article_id	../pubmed_eFetch.py	/^	article_id = get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['PMID']['#text']$/;"	kind:variable	line:31
+article_type_list	../pubmed_eFetch.py	/^	article_type_list = list()$/;"	kind:variable	line:33
+article_type_string	../pubmed_eFetch.py	/^	article_type_string = (' | '.join(article_type_list)).replace('[', '').replace(']', '')$/;"	kind:variable	line:47
+count_dict	../pubmed_eFetch.py	/^count_dict = dict()$/;"	kind:variable	line:14
+db	../dbReduc.py	/^db = pymysql.connect('localhost', 'root', password, db_name)$/;"	kind:variable	line:6
+db	../pubmed_eFetch.py	/^db = pymysql.connect('localhost', 'root', password, db_name)$/;"	kind:variable	line:8
+dbCur	../dbReduc.py	/^dbCur = db.cursor()$/;"	kind:variable	line:7
+dbCur	../pubmed_eFetch.py	/^dbCur = db.cursor()$/;"	kind:variable	line:9
 dbReduc.py	../dbReduc.py	1;"	kind:file	line:1
-db_name	../dbReduc.py	/^db_name = input()$/;"	kind:variable	line:7
-db_name	../pubmed_eFetch.py	/^db_name = input()$/;"	kind:variable	line:11
-dict_of_id	../dbReduc.py	/^dict_of_id = dict()$/;"	kind:variable	line:20
-get_response	../pubmed_eFetch.py	/^get_response = (xmltodict.parse(y.content))$/;"	kind:variable	line:33
-getpass	../dbReduc.py	/^import getpass$/;"	kind:namespace	line:4
+db_name	../dbReduc.py	/^db_name = input()$/;"	kind:variable	line:5
+db_name	../pubmed_eFetch.py	/^db_name = input()$/;"	kind:variable	line:7
+dict_of_id	../dbReduc.py	/^dict_of_id = dict()$/;"	kind:variable	line:16
+doLearning	../anchorCode.py	/^def doLearning(self):      $/;"	kind:function	line:1
+function.py	../function.py	1;"	kind:file	line:1
+get_response	../pubmed_eFetch.py	/^get_response = (xmltodict.parse(raw_response.content))$/;"	kind:variable	line:27
+getpass	../dbReduc.py	/^import getpass$/;"	kind:namespace	line:2
 getpass	../pubmed_eFetch.py	/^import getpass$/;"	kind:namespace	line:1
-json	../pubmed_eFetch.py	/^import json$/;"	kind:namespace	line:7
-list_of_mesh	../pubmed_eFetch.py	/^    list_of_mesh = list()$/;"	kind:variable	line:37
-math	../dbReduc.py	/^import math$/;"	kind:namespace	line:3
-math	../pubmed_eFetch.py	/^import math$/;"	kind:namespace	line:2
-os	../dbReduc.py	/^import os$/;"	kind:namespace	line:2
-os	../pubmed_eFetch.py	/^import os$/;"	kind:namespace	line:3
-password	../dbReduc.py	/^password = getpass.getpass()$/;"	kind:variable	line:6
-password	../pubmed_eFetch.py	/^password = getpass.getpass()$/;"	kind:variable	line:10
-post_url	../pubmed_eFetch.py	/^    post_url = post_url + (",{}").format(str(item[0]))$/;"	kind:variable	line:25
-predication_rows	../dbReduc.py	/^predication_rows = dbCur.fetchall()$/;"	kind:variable	line:16
+learnRanking	../function.py	/^def learnRanking():$/;"	kind:function	line:11
+list_of_mesh	../pubmed_eFetch.py	/^	list_of_mesh = list()$/;"	kind:variable	line:32
+math	../function.py	/^import math$/;"	kind:namespace	line:1
+parsed_response	../pubmed_eFetch.py	/^parsed_response = (xmltodict.parse(response.content))$/;"	kind:variable	line:24
+password	../dbReduc.py	/^password = getpass.getpass()$/;"	kind:variable	line:4
+password	../pubmed_eFetch.py	/^password = getpass.getpass()$/;"	kind:variable	line:6
+patientToVector	../function.py	/^def patientToVector():$/;"	kind:function	line:4
+post_url	../pubmed_eFetch.py	/^	post_url = post_url + (",{}").format(str(item[0]))$/;"	kind:variable	line:20
+predication_rows	../dbReduc.py	/^predication_rows = dbCur.fetchall()$/;"	kind:variable	line:14
+psycopg2	../function.py	/^import psycopg2$/;"	kind:namespace	line:2
 pubmed_eFetch.py	../pubmed_eFetch.py	1;"	kind:file	line:1
 pymysql	../dbReduc.py	/^import pymysql$/;"	kind:namespace	line:1
-pymysql	../pubmed_eFetch.py	/^import pymysql$/;"	kind:namespace	line:5
-requests	../pubmed_eFetch.py	/^import requests$/;"	kind:namespace	line:6
-response	../pubmed_eFetch.py	/^response = requests.post(post_url)$/;"	kind:variable	line:27
-rows	../pubmed_eFetch.py	/^rows = dbCur.fetchall()$/;"	kind:variable	line:17
-x	../pubmed_eFetch.py	/^x  = (xmltodict.parse(response.content))$/;"	kind:variable	line:28
-xmltodict	../pubmed_eFetch.py	/^import xmltodict$/;"	kind:namespace	line:8
-y	../pubmed_eFetch.py	/^y = requests.get(get_url.format(x['ePostResult']['WebEnv'], x['ePostResult']['QueryKey']))$/;"	kind:variable	line:32
+pymysql	../pubmed_eFetch.py	/^import pymysql$/;"	kind:namespace	line:2
+queryToLabels	../function.py	/^def queryToLabels():$/;"	kind:function	line:8
+query_base	../pubmed_eFetch.py	/^query_base = "INSERT into mesh_terms (paper_id, count, mesh_terms, article_type) values(\\"{}\\", {}, \\"{}\\", \\"{}\\")"$/;"	kind:variable	line:28
+raw_response	../pubmed_eFetch.py	/^raw_response = requests.get(get_url.format(parsed_response['ePostResult']['WebEnv'], parsed_response['ePostResult']['QueryKey']))$/;"	kind:variable	line:26
+requests	../pubmed_eFetch.py	/^import requests$/;"	kind:namespace	line:3
+response	../pubmed_eFetch.py	/^response = requests.post(post_url)$/;"	kind:variable	line:23
+returnSuggestions	../function.py	/^def returnSuggestions():$/;"	kind:function	line:14
+rows	../pubmed_eFetch.py	/^rows = dbCur.fetchall()$/;"	kind:variable	line:13
+x_1	../pubmed_eFetch.py	/^		x_1 = (' | '.join(list_of_mesh)).replace('[', '').replace(']', '')$/;"	kind:variable	line:52
+xmltodict	../pubmed_eFetch.py	/^import xmltodict$/;"	kind:namespace	line:4

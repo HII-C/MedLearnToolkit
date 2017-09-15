@@ -1,6 +1,4 @@
 import pymysql
-import os
-import math
 import getpass
 
 password = getpass.getpass()
@@ -21,14 +19,10 @@ for index, item in enumerate(predication_rows):
         # dict_of_id[item[2]]['item_array'].append(item)
         dict_of_id[item[2]]['count'] += 1
 
-
     else:
-        dict_of_id[item[2]] = {'paper_id':[item[2]], 'count': 1}
-
-
+        dict_of_id[item[2]] = {'paper_id': [item[2]], 'count': 1}
 
 for item in dict_of_id.keys():
     dbCur.execute(('''INSERT INTO document_count VALUES ({}, {})''').format(item, dict_of_id[item]['count']))
-    # print(dict_of_id[item])
 
 db.commit()
