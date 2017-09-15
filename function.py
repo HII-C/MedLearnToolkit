@@ -3,7 +3,7 @@ import psycopg2
 
 def patientToVector():
     patient_matrix = {}
-    conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' schema='mimiciii'")
+    conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")
     cur = conn.cursor()
     cur.execute("SELECT * from mimiciii.DIAGNOSES_ICD limit 100;")
     rows = cur.fetchall()
@@ -17,7 +17,7 @@ def patientToVector():
             patient_matrix[row[1]] = {row[2]: [row[4]]}
     print(patient_matrix)
 
-
+patientToVector()
 
 # def queryToLabels():
 
