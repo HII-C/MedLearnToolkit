@@ -33,6 +33,7 @@ def patientToVector():
                 else:
                     sparse_matrix[visit_count].append(0)
             visit_count += 1
+            sparse_matrix.append([])
 
     print(sparse_matrix)
 
