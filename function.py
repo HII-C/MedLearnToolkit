@@ -23,7 +23,7 @@ def patientToVector():
                 patient_matrix[row[1]][row[2]] = [row[4]]
         else:
             patient_matrix[row[1]] = {row[2]: [row[4]]}
-    sparse_matrix = list()
+    sparse_matrix = [[]]
     visit_count = 0
     for patient_id in patient_matrix.keys():
         for visit_id in patient_matrix[patient_id].keys():
