@@ -62,7 +62,10 @@ def patientToVector(diagnoses):
     grid = {'C': [1], 'solver': ['newton-cg']}
     clf = LogisticRegression(penalty='l2', max_iter=10000, tol=.0004)
     gs = GridSearchCV(clf, grid, scoring='roc_auc', cv=fold)
-    Z = np.c_[X.reshape(len(X), -1), y.reshape(len(Y), -1)]
+    X = np.array(X)
+    y = np.array(y)
+
+    Z = np.c_[X.reshape(len(X), -1), y.reshape(len(y), -1)]
     X2 = Z[:, :X.size // len(X)].reshape(X.shape);
     Y2 = Z[:, X.size // len(X):].reshape(y.shape);
 
