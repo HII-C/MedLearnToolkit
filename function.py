@@ -56,14 +56,16 @@ def patientToVector(diagnoses):
         dia = 0
         if (diagnoses == item[4]):
             dia = 1
-        X.append(list(visit_matrix[item[2]]))
+        X.append(np.array(list(visit_matrix[item[2]])))
         y.append(dia)
 
     fold = KFold(3)
     grid = {'C': [1], 'solver': ['newton-cg']}
     clf = LogisticRegression(penalty='l2', max_iter=10000, tol=.0004)
     gs = GridSearchCV(clf, grid, scoring='roc_auc', cv=fold)
+    X = np.array(X)
     X = scipy.sparse.csr_matrix(X)
+    print(X)
     
     
     # searchCV = LogisticRegressionCV(Cs=list(np.power(10.0, np.arange(-10, 10))), penalty='l2'
