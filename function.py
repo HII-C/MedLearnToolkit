@@ -9,7 +9,7 @@ def patientToVector(diagnoses):
     code_dict = {}
     conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")
     cur = conn.cursor()
-    cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 100;")
+    cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 10000;")
     rows = cur.fetchall()
     visit_matrix = {}
     visit_count = 0
@@ -40,7 +40,12 @@ def patientToVector(diagnoses):
                 else:
                     visit_matrix[visit_id].append(0)
 
-    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE 'hadm_id' in {}").format(visit_matrix.keys())
+    test_tuple = list()
+    for x in visit_matrix.keys():
+        test_tuple.append(int(x))
+    test_tuple = tuple(test_tuple)
+
+    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE hadm_id in {}").format(test_tuple)
     diagnoses_rows = cur.execute(query_string)
     diagnoses_matrix = {}
     X = list()
@@ -70,7 +75,7 @@ def patientToVector(diagnoses):
 
 
 
-patientToVector('25000')
+patientToVector(int('0331')
 
 # def queryToLabels():
 
@@ -79,4 +84,3 @@ patientToVector('25000')
 
 
 # def returnSuggestions():
-
