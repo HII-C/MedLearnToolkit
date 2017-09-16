@@ -1,7 +1,7 @@
 import math
 import psycopg2
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import GridSearchCV, KFold
 import numpy as np
 
 def patientToVector(diagnoses):
@@ -40,7 +40,7 @@ def patientToVector(diagnoses):
                 else:
                     visit_matrix[visit_id].append(0)
 
-    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE 'hamd_id' in {}").format(visit_matrix.keys())
+    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE 'hadm_id' in {}").format(visit_matrix.keys())
     diagnoses_rows = cur.execute(query_string)
     diagnoses_matrix = {}
     X = list()
@@ -52,17 +52,21 @@ def patientToVector(diagnoses):
         X.append(visit_matrix[item[2]])
         y.append(dia)
 
-    fold = KFold(len(y), n_folds=5, shuffle=True, random_state=777)
+    fold = KFold(len(y), shuffle=False, random_state=777)
+    grid = {'C': 1, 'solver': ['newton-cg']}
+    clf = LogisticRegression(penalty='l2', random_state=777, max_iter=10000, tol=10)
+    gs = GridSearchCV(clf, grid, scoring='roc_auc', cv=fold)
 
-    searchCV = LogisticRegressionCV(Cs=list(np.power(10.0, np.arange(-10, 10))), penalty='l2'
-        ,scoring='roc_auc'
-        ,cv=fold
-        ,random_state=777
-        ,max_iter=10000
-        ,fit_intercept=True
-        ,solver='newton-cg'
-        ,tol=10)
-    print(searchCV.fit(X, y))
+    # searchCV = LogisticRegressionCV(Cs=list(np.power(10.0, np.arange(-10, 10))), penalty='l2'
+    #     ,scoring='roc_auc'
+    #     ,cv=fold
+    #     ,random_state=777
+    #     ,max_iter=10000
+    #     ,fit_intercept=True
+    #     ,solver='newton-cg'
+    #     ,tol=10)
+    g = gs.fit(X, y)
+    print(g.best_score_)
 
 
 
