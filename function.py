@@ -50,15 +50,20 @@ def patientToVector(diagnoses):
     query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE hadm_id in {}").format(string_tuple)
     cur.execute(query_string)
     diagnoses_rows = cur.fetchall()
-
-    X = np.zeros(shape=(len(code_dict.keys()), len(visit_matrix.keys())))
-    y = np.zeros(shape=(1, len(diagnoses_rows)))
+    diagnoses_dict = {}
+    for item in diagnoses_rows:
+        if item[2] in diagnoses_dict.keys():
+            diagnoses_dict[item[2]].append(item[4])
+        else:
+            diagnoses_dict[item[2]] = [item[4]]
+    X = np.zeros(shape=(len(code_dict.keys()), len(diagnoses_dict.keys())))
+    y = np.zeros(shape=(1, len(diagnoses_dict.keys())))
 
     count_y = 0
-    for item in diagnoses_rows:
+    for item in diagnoses_dict.keys():
         for index, itm in enumerate(visit_matrix[item[2]]):
             X[index][count_y] = itm
-        if (diagnoses == item[4]):
+        if (diagnoses in item):
             y[0][count_y] = 1
         else:
             y[0][count_y] = 0
