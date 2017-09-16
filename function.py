@@ -1,14 +1,18 @@
 import math
 import psycopg2
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
+from sklearn.cross_validation import KFold
+import numpy as np
 
-def patientToVector():
+def patientToVector(diagnoses):
     patient_matrix = {}
     code_dict = {}
-    code_count = 0
     conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")
     cur = conn.cursor()
     cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 100;")
     rows = cur.fetchall()
+    visit_matrix = {}
+    visit_count = 0
     for row in rows:
         # row[1] = patient_id, row[2] = visit_id, row[4] = icd_9_code
         if row[1] in patient_matrix.keys():
@@ -16,28 +20,53 @@ def patientToVector():
                 if (row[4] in code_dict.keys()):
                     patient_matrix[row[1]][row[2]].append(row[4])
                 else:
-                    code_count += 1
-                    code_dict[row[4]] = code_count
+                    code_dict[row[4]] = row[4]
                     patient_matrix[row[1]][row[2]].append([row[4]])
             else:
                 patient_matrix[row[1]][row[2]] = [row[4]]
         else:
             patient_matrix[row[1]] = {row[2]: [row[4]]}
-    sparse_matrix = [[]]
+
+    # This loop needs to full set of observations to be formed, must wait to be iterated
+    visit_matrix = {}
     visit_count = 0
+
     for patient_id in patient_matrix.keys():
         for visit_id in patient_matrix[patient_id].keys():
+            visit_matrix[visit_id] = []
             for code in code_dict.keys():
                 if code in patient_matrix[patient_id][visit_id]:
-                    sparse_matrix[visit_count].append(1)
+                    visit_matrix[visit_id].append(1)
                 else:
-                    sparse_matrix[visit_count].append(0)
-            visit_count += 1
-            sparse_matrix.append([])
+                    visit_matrix[visit_id].append(0)
 
-    print(sparse_matrix)
+    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE 'hamd_id' in {}").format(visit_matrix.keys())
+    diagnoses_rows = cur.execute(query_string)
+    diagnoses_matrix = {}
+    X = list()
+    y = list()
+    for item in diagnoses_rows:
+        dia = 0
+        if (diagnoses == item[4]):
+            dia = 1
+        X.append(visit_matrix[item[2]])
+        y.append(dia)
 
-patientToVector()
+    fold = KFold(len(y), n_folds=5, shuffle=True, random_state=777)
+
+    searchCV = LogisticRegressionCV(Cs=list(np.power(10.0, np.arange(-10, 10))), penalty='l2'
+        ,scoring='roc_auc'
+        ,cv=fold
+        ,random_state=777
+        ,max_iter=10000
+        ,fit_intercept=True
+        ,solver='newton-cg'
+        ,tol=10)
+    print(searchCV.fit(X, y))
+
+
+
+patientToVector('25000')
 
 # def queryToLabels():
 

@@ -22,7 +22,6 @@ function.py	../function.py	1;"	kind:file	line:1
 get_response	../pubmed_eFetch.py	/^get_response = (xmltodict.parse(raw_response.content))$/;"	kind:variable	line:27
 getpass	../dbReduc.py	/^import getpass$/;"	kind:namespace	line:2
 getpass	../pubmed_eFetch.py	/^import getpass$/;"	kind:namespace	line:1
-learnRanking	../function.py	/^def learnRanking():$/;"	kind:function	line:11
 list_of_mesh	../pubmed_eFetch.py	/^	list_of_mesh = list()$/;"	kind:variable	line:32
 math	../function.py	/^import math$/;"	kind:namespace	line:1
 parsed_response	../pubmed_eFetch.py	/^parsed_response = (xmltodict.parse(response.content))$/;"	kind:variable	line:24
@@ -35,12 +34,10 @@ psycopg2	../function.py	/^import psycopg2$/;"	kind:namespace	line:2
 pubmed_eFetch.py	../pubmed_eFetch.py	1;"	kind:file	line:1
 pymysql	../dbReduc.py	/^import pymysql$/;"	kind:namespace	line:1
 pymysql	../pubmed_eFetch.py	/^import pymysql$/;"	kind:namespace	line:2
-queryToLabels	../function.py	/^def queryToLabels():$/;"	kind:function	line:8
 query_base	../pubmed_eFetch.py	/^query_base = "INSERT into mesh_terms (paper_id, count, mesh_terms, article_type) values(\\"{}\\", {}, \\"{}\\", \\"{}\\")"$/;"	kind:variable	line:28
 raw_response	../pubmed_eFetch.py	/^raw_response = requests.get(get_url.format(parsed_response['ePostResult']['WebEnv'], parsed_response['ePostResult']['QueryKey']))$/;"	kind:variable	line:26
 requests	../pubmed_eFetch.py	/^import requests$/;"	kind:namespace	line:3
 response	../pubmed_eFetch.py	/^response = requests.post(post_url)$/;"	kind:variable	line:23
-returnSuggestions	../function.py	/^def returnSuggestions():$/;"	kind:function	line:14
 rows	../pubmed_eFetch.py	/^rows = dbCur.fetchall()$/;"	kind:variable	line:13
 x_1	../pubmed_eFetch.py	/^		x_1 = (' | '.join(list_of_mesh)).replace('[', '').replace(']', '')$/;"	kind:variable	line:52
 xmltodict	../pubmed_eFetch.py	/^import xmltodict$/;"	kind:namespace	line:4
