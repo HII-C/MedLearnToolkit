@@ -62,11 +62,11 @@ def patientToVector(diagnoses):
     count_y = 0
     for item in diagnoses_dict.keys():
         for index, itm in enumerate(visit_matrix[item]):
-            X[index][count_y] = itm
+            X[index, count_y] = itm
         if (diagnoses in diagnoses_dict[item]):
-            y[0][count_y] = 1
+            y[0, count_y] = 1
         else:
-            y[0][count_y] = 0
+            y[0, count_y] = 0
         count_y += 1
 
     clf = svm.SVC(gamma=.001, C=100)
