@@ -70,8 +70,8 @@ def patientToVector(diagnoses):
         count_y += 1
 
     clf = svm.SVC(gamma=.001, C=100)
-    clf.fit(X[:-1], y[:-1])
-    print(clf.predict(X[-1:]))
+    clf.fit(X, y)
+    print(clf.predict(X[5]))
 
 
 patientToVector(int('0331'))
