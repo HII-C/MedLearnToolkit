@@ -2,6 +2,7 @@ import math
 import psycopg2
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.model_selection import GridSearchCV, KFold
+from sklearn import svm
 import numpy as np
 import scipy
 
@@ -41,43 +42,31 @@ def patientToVector(diagnoses):
                 else:
                     visit_matrix[visit_id].append(0)
 
-    test_tuple = list()
+    string_tuple = list()
     for x in visit_matrix.keys():
-        test_tuple.append(int(x))
-    test_tuple = tuple(test_tuple)
+        string_tuple.append(int(x))
+    string_tuple = tuple(string_tuple)
 
-    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE hadm_id in {}").format(test_tuple)
+    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE hadm_id in {}").format(string_tuple)
     cur.execute(query_string)
     diagnoses_rows = cur.fetchall()
-    diagnoses_matrix = {}
-    X = list()
-    y = list()
-    for item in diagnoses_rows:
-        dia = 0
-        if (diagnoses == item[4]):
-            dia = 1
-        X.append(np.array(list(visit_matrix[item[2]])))
-        y.append(dia)
 
-    fold = KFold(3)
-    grid = {'C': [1], 'solver': ['newton-cg']}
-    clf = LogisticRegression(penalty='l2', max_iter=10000, tol=.0004)
-    gs = GridSearchCV(clf, grid, scoring='roc_auc', cv=fold)
-    X = np.array(X)
-    X = scipy.sparse.csr_matrix(X)
-    print(X)
-    
-    
-    # searchCV = LogisticRegressionCV(Cs=list(np.power(10.0, np.arange(-10, 10))), penalty='l2'
-    #     ,scoring='roc_auc'
-    #     ,cv=fold
-    #     ,random_state=777
-    #     ,max_iter=10000
-    #     ,fit_intercept=True
-    #     ,solver='newton-cg'
-    #     ,tol=10)
-    g = gs.fit(X, y)
-    print(g.best_score_)
+    X = np.zeros(shape=(len(code_dict.keys()), len(visit_matrix.keys())))
+    y = np.zeros(shape=(1, len(visit_matrix.keys())))
+
+    count_y = 0
+    for item in diagnoses_rows:
+        for index, itm in enumerate(visit_matrix[item[2]]):
+            X[index][count_y] = itm
+        if (diagnoses == item[4]):
+            y[0][count_y] = 1
+        else:
+            y[0][count_y] = 0
+        count_y += 1
+
+    clf = svm.SVC(gamma=.001, C=100)
+    clf.fit(X[:-1], y[:-1])
+    print(clf.predict(X[-1:]))
 
 
 patientToVector(int('0331'))
