@@ -52,7 +52,7 @@ def patientToVector(diagnoses):
     diagnoses_rows = cur.fetchall()
 
     X = np.zeros(shape=(len(code_dict.keys()), len(visit_matrix.keys())))
-    y = np.zeros(shape=(1, len(visit_matrix.keys())))
+    y = np.zeros(shape=(1, len(diagnoses_rows)))
 
     count_y = 0
     for item in diagnoses_rows:
