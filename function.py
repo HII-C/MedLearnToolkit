@@ -57,7 +57,7 @@ def patientToVector(diagnoses):
         else:
             diagnoses_dict[item[2]] = [item[4]]
     X = np.zeros(shape=(len(code_dict.keys()), len(diagnoses_dict.keys())))
-    y = np.zeros(shape=(1, len(diagnoses_dict.keys())))
+    y = np.zeros(shape=(len(diagnoses_dict.keys())))
 
     count_y = 0
     for item in diagnoses_dict.keys():
@@ -70,7 +70,7 @@ def patientToVector(diagnoses):
         count_y += 1
 
     clf = svm.SVC(gamma=.001, C=100)
-    clf.fit(X)
+    clf.fit(X, y)
     print(clf.predict(X[5]))
 
 
