@@ -49,20 +49,21 @@ def patientToVector(diagnoses):
     cur.execute(query_string)
     diagnoses_rows = cur.fetchall()
     diagnoses_matrix = {}
-    X = np.array()
-    y = np.array()
+    X = list()
+    y = list()
     for item in diagnoses_rows:
         dia = 0
         if (diagnoses == item[4]):
             dia = 1
-        X.append(visit_matrix[item[2]])
+        X.append(np.array(list(visit_matrix[item[2]])))
         y.append(dia)
 
     fold = KFold(3)
     grid = {'C': [1], 'solver': ['newton-cg']}
     clf = LogisticRegression(penalty='l2', max_iter=10000, tol=.0004)
     gs = GridSearchCV(clf, grid, scoring='roc_auc', cv=fold)
-
+    y = np.array(y)
+    X = np.array(X)
     
     # searchCV = LogisticRegressionCV(Cs=list(np.power(10.0, np.arange(-10, 10))), penalty='l2'
     #     ,scoring='roc_auc'
