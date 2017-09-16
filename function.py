@@ -63,7 +63,7 @@ def patientToVector(diagnoses):
     clf = LogisticRegression(penalty='l2', max_iter=10000, tol=.0004)
     gs = GridSearchCV(clf, grid, scoring='roc_auc', cv=fold)
     X = np.array(X)
-    X = X.flat()
+    X = X.flatten()
     y = np.array(code_dict.keys())
 
 
