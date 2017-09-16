@@ -46,7 +46,8 @@ def patientToVector(diagnoses):
     test_tuple = tuple(test_tuple)
 
     query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE hadm_id in {}").format(test_tuple)
-    diagnoses_rows = cur.execute(query_string)
+    cur.execute(query_string)
+    diagnoses_rows = cur.fetchall()
     diagnoses_matrix = {}
     X = list()
     y = list()
@@ -57,10 +58,12 @@ def patientToVector(diagnoses):
         X.append(visit_matrix[item[2]])
         y.append(dia)
 
-    fold = KFold(len(y), shuffle=False, random_state=777)
-    grid = {'C': 1, 'solver': ['newton-cg']}
-    clf = LogisticRegression(penalty='l2', random_state=777, max_iter=10000, tol=10)
+    fold = KFold(3)
+    grid = {'C': [1], 'solver': ['newton-cg']}
+    clf = LogisticRegression(penalty='l2', max_iter=10000, tol=.0004)
     gs = GridSearchCV(clf, grid, scoring='roc_auc', cv=fold)
+    X = np.array(X)
+    X = [list(X.flat), len(code_dict.keys())]
 
     # searchCV = LogisticRegressionCV(Cs=list(np.power(10.0, np.arange(-10, 10))), penalty='l2'
     #     ,scoring='roc_auc'
@@ -74,13 +77,4 @@ def patientToVector(diagnoses):
     print(g.best_score_)
 
 
-
-patientToVector(int('0331')
-
-# def queryToLabels():
-
-
-# def learnRanking():
-
-
-# def returnSuggestions():
+patientToVector(int('0331'))
