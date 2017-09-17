@@ -32,7 +32,7 @@ def patientToVector(diagnoses):
     # This loop needs to full set of observations to be formed, must wait to be iterated
     visit_matrix = {}
     visit_count = 0
-    print(code_dict.keys())
+    # print(code_dict.keys())
     for patient_id in patient_matrix.keys():
         for visit_id in patient_matrix[patient_id].keys():
             visit_matrix[visit_id] = []
@@ -63,7 +63,7 @@ def patientToVector(diagnoses):
 
     count_y = 0
     imp_index = 0
-    print(len(diagnoses_dict.keys()))
+    # print(len(diagnoses_dict.keys()))
     for item in diagnoses_dict.keys():
         X[count_y] = np.array(visit_matrix[item])
         print(diagnoses_dict[item])
@@ -77,14 +77,15 @@ def patientToVector(diagnoses):
             y[count_y] = 1
         count_y += 1
 
-    clf = svm.SVC(C=1)
+    clf = svm.SVC(C=100, degree=3, kernel='linear')
     clf.fit(X, y)
-    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = {} limit 1000;").format(diagnoses)
+    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 1000;").format(diagnoses)
     cur.execute(query_string)
     prediction_rows = cur.fetchall()
+    
     for row in prediction_rows:
         if (row[2] not in visit_matrix.keys()):
-            cur.execute(("SELECT * from mimiciii.PROCEDURES_ICD WHERE hadm_id = {};").format(row[2]))
+            cur.execute(("SELECT * from mimiciii.PROCEDURES_ICD WHERE hadm_id = \'{}\';").format(row[2]))
             rows = cur.fetchall()
             this_patient = list()
             for r in rows:
@@ -97,10 +98,10 @@ def patientToVector(diagnoses):
                         vis_arr.append(1)
                     else:
                         vis_arr.append(0)
-                
-
-            print(clf.predict(vis_arr)
-    print(clf.predict(X[(imp_index):(imp_index + 1)]))
+            print('Should only show once') 
+            print(clf.predict(np.array(vis_arr).reshape(1, -1)))
+            exit()
+    # print(clf.predict(X[(imp_index):(imp_index + 1)]))
 
 
 patientToVector('51881')
