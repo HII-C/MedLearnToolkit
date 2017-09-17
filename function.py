@@ -77,8 +77,29 @@ def patientToVector(diagnoses):
             y[count_y] = 1
         count_y += 1
 
-    clf = svm.SVC(gamma=.001, C=100)
+    clf = svm.SVC(C=1)
     clf.fit(X, y)
+    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = {} limit 1000;").format(diagnoses)
+    cur.execute(query_string)
+    prediction_rows = cur.fetchall()
+    for row in prediction_rows:
+        if (row[2] not in visit_matrix.keys()):
+            cur.execute(("SELECT * from mimiciii.PROCEDURES_ICD WHERE hadm_id = {};").format(row[2]))
+            rows = cur.fetchall()
+            this_patient = list()
+            for r in rows:
+                this_patient.append(r[4])
+
+            for r in rows:
+                vis_arr = []
+                for code in code_dict.keys():
+                    if code in this_patient:
+                        vis_arr.append(1)
+                    else:
+                        vis_arr.append(0)
+                
+
+            print(clf.predict(vis_arr)
     print(clf.predict(X[(imp_index):(imp_index + 1)]))
 
 
