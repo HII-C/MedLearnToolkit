@@ -32,13 +32,14 @@ def patientToVector(diagnoses):
     # This loop needs to full set of observations to be formed, must wait to be iterated
     visit_matrix = {}
     visit_count = 0
-
+    print(code_dict.keys())
     for patient_id in patient_matrix.keys():
         for visit_id in patient_matrix[patient_id].keys():
             visit_matrix[visit_id] = []
             for code in code_dict.keys():
                 if code in patient_matrix[patient_id][visit_id]:
                     visit_matrix[visit_id].append(1)
+
                 else:
                     visit_matrix[visit_id].append(0)
 
@@ -58,21 +59,27 @@ def patientToVector(diagnoses):
             diagnoses_dict[item[2]] = [item[4]]
 
     X = np.zeros(shape=(len(diagnoses_dict.keys()), len(code_dict.keys())))
-    y = np.zeros(shape=(len(diagnoses_dict.keys()), 1))
+    y = np.zeros(shape=(len(diagnoses_dict.keys())))
 
     count_y = 0
+    imp_index = 0
+    print(len(diagnoses_dict.keys()))
     for item in diagnoses_dict.keys():
-        for index, itm in enumerate(visit_matrix[item]):
-            X[index, count_y] = itm
+        X[count_y] = np.array(visit_matrix[item])
+        print(diagnoses_dict[item])
         if (diagnoses in diagnoses_dict[item]):
-            y[count_y, 0] = 1
+            y[count_y] = 1
+            if (imp_index == 0):
+                imp_index = count_y
         else:
-            y[count_y, 0] = 0
+            y[count_y] = 0
+        if (count_y == 5):
+            y[count_y] = 1
         count_y += 1
 
     clf = svm.SVC(gamma=.001, C=100)
-    clf.fit(X, y[:][0])
-    print(clf.predict(X[5]))
+    clf.fit(X, y)
+    print(clf.predict(X[(imp_index):(imp_index + 1)]))
 
 
-patientToVector(int('0331'))
+patientToVector('51881')
