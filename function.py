@@ -56,8 +56,8 @@ def patientToVector(diagnoses):
             diagnoses_dict[item[2]].append(item[4])
         else:
             diagnoses_dict[item[2]] = [item[4]]
-    X = np.zeros(shape=(len(diagnoses_dict.keys()), len(code_dict.keys())))
-    y = np.zeros(shape=(len(diagnoses_dict.keys())))
+    X = np.zeros(shape=(len(diagnoses_dict.keys() - 1), len(code_dict.keys()) - 1))
+    y = np.zeros(shape=(len(diagnoses_dict.keys()) - 1))
 
     count_y = 0
     for item in diagnoses_dict.keys():
