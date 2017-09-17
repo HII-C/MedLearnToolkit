@@ -56,21 +56,22 @@ def patientToVector(diagnoses):
             diagnoses_dict[item[2]].append(item[4])
         else:
             diagnoses_dict[item[2]] = [item[4]]
-    X = np.zeros(shape=(len(diagnoses_dict.keys()) - 1, len(code_dict.keys()) - 1))
-    y = np.zeros(shape=(len(diagnoses_dict.keys()) - 1))
+
+    X = np.zeros(shape=(len(diagnoses_dict.keys()), len(code_dict.keys())))
+    y = np.zeros(shape=(len(diagnoses_dict.keys()), 1))
 
     count_y = 0
     for item in diagnoses_dict.keys():
         for index, itm in enumerate(visit_matrix[item]):
             X[index, count_y] = itm
         if (diagnoses in diagnoses_dict[item]):
-            y[count_y] = 1
+            y[count_y, 0] = 1
         else:
-            y[count_y] = 0
+            y[count_y, 0] = 0
         count_y += 1
 
     clf = svm.SVC(gamma=.001, C=100)
-    clf.fit(X, y)
+    clf.fit(X, y[:][0])
     print(clf.predict(X[5]))
 
 
