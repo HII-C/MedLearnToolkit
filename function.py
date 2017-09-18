@@ -77,7 +77,8 @@ def patientToVector(diagnoses):
             y[count_y] = 1
         count_y += 1
 
-    clf = svm.SVC(C=100, random_state = 0)
+    # clf = svm.SVC(C=100, random_state = 0)
+    clf = LogisticRegression()
     clf.fit(X, y)
     query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 1000;").format(diagnoses)
     cur.execute(query_string)

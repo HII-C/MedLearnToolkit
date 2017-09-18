@@ -4,6 +4,10 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
+GridSearchCV	../function.py	/^from sklearn.model_selection import GridSearchCV, KFold$/;"	kind:namespace	line:4
+KFold	../function.py	/^from sklearn.model_selection import GridSearchCV, KFold$/;"	kind:namespace	line:4
+LogisticRegression	../function.py	/^from sklearn.linear_model import LogisticRegression, LogisticRegressionCV$/;"	kind:namespace	line:3
+LogisticRegressionCV	../function.py	/^from sklearn.linear_model import LogisticRegression, LogisticRegressionCV$/;"	kind:namespace	line:3
 anchorCode.py	../anchorCode.py	1;"	kind:file	line:1
 article_id	../pubmed_eFetch.py	/^	article_id = get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['PMID']['#text']$/;"	kind:variable	line:31
 article_type_list	../pubmed_eFetch.py	/^	article_type_list = list()$/;"	kind:variable	line:33
@@ -24,10 +28,11 @@ getpass	../dbReduc.py	/^import getpass$/;"	kind:namespace	line:2
 getpass	../pubmed_eFetch.py	/^import getpass$/;"	kind:namespace	line:1
 list_of_mesh	../pubmed_eFetch.py	/^	list_of_mesh = list()$/;"	kind:variable	line:32
 math	../function.py	/^import math$/;"	kind:namespace	line:1
+np	../function.py	/^import numpy as np$/;"	kind:namespace	line:6
 parsed_response	../pubmed_eFetch.py	/^parsed_response = (xmltodict.parse(response.content))$/;"	kind:variable	line:24
 password	../dbReduc.py	/^password = getpass.getpass()$/;"	kind:variable	line:4
 password	../pubmed_eFetch.py	/^password = getpass.getpass()$/;"	kind:variable	line:6
-patientToVector	../function.py	/^def patientToVector():$/;"	kind:function	line:4
+patientToVector	../function.py	/^def patientToVector(diagnoses):$/;"	kind:function	line:9
 post_url	../pubmed_eFetch.py	/^	post_url = post_url + (",{}").format(str(item[0]))$/;"	kind:variable	line:20
 predication_rows	../dbReduc.py	/^predication_rows = dbCur.fetchall()$/;"	kind:variable	line:14
 psycopg2	../function.py	/^import psycopg2$/;"	kind:namespace	line:2
@@ -39,5 +44,7 @@ raw_response	../pubmed_eFetch.py	/^raw_response = requests.get(get_url.format(pa
 requests	../pubmed_eFetch.py	/^import requests$/;"	kind:namespace	line:3
 response	../pubmed_eFetch.py	/^response = requests.post(post_url)$/;"	kind:variable	line:23
 rows	../pubmed_eFetch.py	/^rows = dbCur.fetchall()$/;"	kind:variable	line:13
+scipy	../function.py	/^import scipy$/;"	kind:namespace	line:7
+svm	../function.py	/^from sklearn import svm$/;"	kind:namespace	line:5
 x_1	../pubmed_eFetch.py	/^		x_1 = (' | '.join(list_of_mesh)).replace('[', '').replace(']', '')$/;"	kind:variable	line:52
 xmltodict	../pubmed_eFetch.py	/^import xmltodict$/;"	kind:namespace	line:4
