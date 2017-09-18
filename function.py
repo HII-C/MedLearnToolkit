@@ -79,7 +79,7 @@ def patientToVector(diagnoses):
         count_y += 1
 
     # clf = svm.SVC(C=100, random_state = 0)
-    alphas = np.logspace(-4, -1, 6)
+    alphas = np.logspace(-4, -1, 15)
     regr = linear_model.LassoLars()
     scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
     best_alpha = alphas[scores.index(max(scores))]
@@ -110,4 +110,4 @@ def patientToVector(diagnoses):
     # print(clf.predict(X[(imp_index):(imp_index + 1)]))
 
 
-patientToVector('51881')
+patientToVector('V3000')
