@@ -12,7 +12,7 @@ def patientToVector(diagnoses):
     code_dict = {}
     conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")
     cur = conn.cursor()
-    cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 10000;")
+    cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 100000;")
     rows = cur.fetchall()
     visit_matrix = {}
     visit_count = 0
@@ -80,12 +80,12 @@ def patientToVector(diagnoses):
 
     # clf = svm.SVC(C=100, random_state = 0)
     alphas = np.logspace(-4, -1, 6)
-    regr = linear_model.Lasso()
+    regr = linear_model.LassoLars()
     scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
     best_alpha = alphas[scores.index(max(scores))]
     regr.alpha = best_alpha
     regr.fit(X, y)
-    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 1000;").format(diagnoses)
+    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 100000;").format(diagnoses)
     cur.execute(query_string)
     prediction_rows = cur.fetchall()
     
@@ -105,7 +105,7 @@ def patientToVector(diagnoses):
                     else:
                         vis_arr.append(0)
             print('Should only show once') 
-            print(clf.predict(np.array(vis_arr).reshape(1, -1)))
+            print(regr.predict(np.array(vis_arr).reshape(1, -1)))
             exit()
     # print(clf.predict(X[(imp_index):(imp_index + 1)]))
 
