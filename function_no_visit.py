@@ -69,34 +69,35 @@ def patientToVector(diagnoses):
         count_y += 1
     print(y)
     # clf = svm.SVC(C=100, random_state = 0)
-    alphas = np.linspace(.0001, 100, 20)
-    regr = linear_model.RidgeCV()
+    alphas = [.0001, .001, .01, .1, 1, 10]
+    regr = linear_model.RidgeCV(alphas=alphas)
     # scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
     # best_alpha = alphas[scores.index(max(scores))]
     # regr.alpha = best_alpha
     regr.fit(X, y)
-    query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 10000;").format(diagnoses)
-    cur.execute(query_string)
-    prediction_rows = cur.fetchall()
+    print(regr.get_params())
+    # query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 10000;").format(diagnoses)
+    # cur.execute(query_string)
+    # prediction_rows = cur.fetchall()
     
-    for row in prediction_rows:
-        if (row[1] not in patient_code.keys()):
-            cur.execute(("SELECT * from mimiciii.PROCEDURES_ICD WHERE subject_id = \'{}\';").format(row[1]))
-            rows = cur.fetchall()
-            this_patient = list()
-            for r in rows:
-                this_patient.append(r[4])
+    # for row in prediction_rows:
+    #     if (row[1] not in patient_code.keys()):
+    #         cur.execute(("SELECT * from mimiciii.PROCEDURES_ICD WHERE subject_id = \'{}\';").format(row[1]))
+    #         rows = cur.fetchall()
+    #         this_patient = list()
+    #         for r in rows:
+    #             this_patient.append(r[4])
 
-            for r in rows:
-                vis_arr = []
-                for code in code_dict.keys():
-                    if code in this_patient:
-                        vis_arr.append(1)
-                    else:
-                        vis_arr.append(0)
-            print('Should only show once') 
-            print(regr.predict(np.array(vis_arr).reshape(1, -1)))
-            exit()
+    #         for r in rows:
+    #             vis_arr = []
+    #             for code in code_dict.keys():
+    #                 if code in this_patient:
+    #                     vis_arr.append(1)
+    #                 else:
+    #                     vis_arr.append(0)
+    #         print('Should only show once') 
+    #         print(regr.predict(np.array(vis_arr).reshape(1, -1)))
+    #         exit()
     # print(clf.predict(X[(imp_index):(imp_index + 1)]))
 
 

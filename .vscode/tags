@@ -5,9 +5,13 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
 GridSearchCV	../function.py	/^from sklearn.model_selection import GridSearchCV, KFold$/;"	kind:namespace	line:4
+GridSearchCV	../function_no_visit.py	/^from sklearn.model_selection import GridSearchCV, KFold$/;"	kind:namespace	line:4
 KFold	../function.py	/^from sklearn.model_selection import GridSearchCV, KFold$/;"	kind:namespace	line:4
+KFold	../function_no_visit.py	/^from sklearn.model_selection import GridSearchCV, KFold$/;"	kind:namespace	line:4
 LogisticRegression	../function.py	/^from sklearn.linear_model import LogisticRegression, LogisticRegressionCV$/;"	kind:namespace	line:3
+LogisticRegression	../function_no_visit.py	/^from sklearn.linear_model import LogisticRegression, LogisticRegressionCV$/;"	kind:namespace	line:3
 LogisticRegressionCV	../function.py	/^from sklearn.linear_model import LogisticRegression, LogisticRegressionCV$/;"	kind:namespace	line:3
+LogisticRegressionCV	../function_no_visit.py	/^from sklearn.linear_model import LogisticRegression, LogisticRegressionCV$/;"	kind:namespace	line:3
 anchorCode.py	../anchorCode.py	1;"	kind:file	line:1
 article_id	../pubmed_eFetch.py	/^	article_id = get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['PMID']['#text']$/;"	kind:variable	line:31
 article_type_list	../pubmed_eFetch.py	/^	article_type_list = list()$/;"	kind:variable	line:33
@@ -23,20 +27,26 @@ db_name	../pubmed_eFetch.py	/^db_name = input()$/;"	kind:variable	line:7
 dict_of_id	../dbReduc.py	/^dict_of_id = dict()$/;"	kind:variable	line:16
 doLearning	../anchorCode.py	/^def doLearning(self):      $/;"	kind:function	line:1
 function.py	../function.py	1;"	kind:file	line:1
+function_no_visit.py	../function_no_visit.py	1;"	kind:file	line:1
 get_response	../pubmed_eFetch.py	/^get_response = (xmltodict.parse(raw_response.content))$/;"	kind:variable	line:27
 getpass	../dbReduc.py	/^import getpass$/;"	kind:namespace	line:2
 getpass	../pubmed_eFetch.py	/^import getpass$/;"	kind:namespace	line:1
 linear_model	../function.py	/^from sklearn import linear_model$/;"	kind:namespace	line:5
+linear_model	../function_no_visit.py	/^from sklearn import linear_model$/;"	kind:namespace	line:5
 list_of_mesh	../pubmed_eFetch.py	/^	list_of_mesh = list()$/;"	kind:variable	line:32
 math	../function.py	/^import math$/;"	kind:namespace	line:1
+math	../function_no_visit.py	/^import math$/;"	kind:namespace	line:1
 np	../function.py	/^import numpy as np$/;"	kind:namespace	line:7
+np	../function_no_visit.py	/^import numpy as np$/;"	kind:namespace	line:7
 parsed_response	../pubmed_eFetch.py	/^parsed_response = (xmltodict.parse(response.content))$/;"	kind:variable	line:24
 password	../dbReduc.py	/^password = getpass.getpass()$/;"	kind:variable	line:4
 password	../pubmed_eFetch.py	/^password = getpass.getpass()$/;"	kind:variable	line:6
 patientToVector	../function.py	/^def patientToVector(diagnoses):$/;"	kind:function	line:10
+patientToVector	../function_no_visit.py	/^def patientToVector(diagnoses):$/;"	kind:function	line:10
 post_url	../pubmed_eFetch.py	/^	post_url = post_url + (",{}").format(str(item[0]))$/;"	kind:variable	line:20
 predication_rows	../dbReduc.py	/^predication_rows = dbCur.fetchall()$/;"	kind:variable	line:14
 psycopg2	../function.py	/^import psycopg2$/;"	kind:namespace	line:2
+psycopg2	../function_no_visit.py	/^import psycopg2$/;"	kind:namespace	line:2
 pubmed_eFetch.py	../pubmed_eFetch.py	1;"	kind:file	line:1
 pymysql	../dbReduc.py	/^import pymysql$/;"	kind:namespace	line:1
 pymysql	../pubmed_eFetch.py	/^import pymysql$/;"	kind:namespace	line:2
@@ -46,6 +56,8 @@ requests	../pubmed_eFetch.py	/^import requests$/;"	kind:namespace	line:3
 response	../pubmed_eFetch.py	/^response = requests.post(post_url)$/;"	kind:variable	line:23
 rows	../pubmed_eFetch.py	/^rows = dbCur.fetchall()$/;"	kind:variable	line:13
 scipy	../function.py	/^import scipy$/;"	kind:namespace	line:8
+scipy	../function_no_visit.py	/^import scipy$/;"	kind:namespace	line:8
 svm	../function.py	/^from sklearn import svm$/;"	kind:namespace	line:6
+svm	../function_no_visit.py	/^from sklearn import svm$/;"	kind:namespace	line:6
 x_1	../pubmed_eFetch.py	/^		x_1 = (' | '.join(list_of_mesh)).replace('[', '').replace(']', '')$/;"	kind:variable	line:52
 xmltodict	../pubmed_eFetch.py	/^import xmltodict$/;"	kind:namespace	line:4
