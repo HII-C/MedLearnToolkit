@@ -60,22 +60,22 @@ def patientToVector(diagnoses):
     # print(len(diagnoses_dict.keys()))
     for item in patient_code.keys():
         X[count_y] = np.array(patient_code[item])
-        print(diagnoses_dict[item])
+        # print(diagnoses_dict[item])
         if (diagnoses in diagnoses_dict[item]):
             y[count_y] = 1
         else:
             y[count_y] = 0
 
         count_y += 1
-    print(y)
+    # print(y)
     # clf = svm.SVC(C=100, random_state = 0)
     alphas = [.0001, .001, .01, .1, 1, 10]
-    regr = linear_model.RidgeCV(alphas=alphas)
+    regr = linear_model.LogisticRegressionCV()
     # scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
     # best_alpha = alphas[scores.index(max(scores))]
     # regr.alpha = best_alpha
     regr.fit(X, y)
-    print(regr.get_params())
+    print(regr.coef_)
     # query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 10000;").format(diagnoses)
     # cur.execute(query_string)
     # prediction_rows = cur.fetchall()
