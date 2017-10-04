@@ -62,6 +62,7 @@ class no_ref_codes():
     def sparse_matrix_generation_by_patient(self):
         patient_sparse_matrix = dict()
         for patient_id in self.patient_matrix.keys():
+            patient_sparse_matrix[patient_id] = []
             for code in self.code_dict.keys():
                 if code in self.patient_matrix[patient_id]:
                     patient_sparse_matrix[patient_id].append(1)
@@ -137,7 +138,7 @@ class no_ref_codes():
 
 testing = no_ref_codes('41401')
 testing.code_generation()
-patient_sparse = testing.sparse_matrix_generation_by_patient()
-test1, test2 = testing.array_generation_for_ml_visit(patient_sparse)
+visit_sparse = testing.sparse_matrix_generation_by_visit()
+test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
 testing.learning_by_diagnoses_lasso(test1, test2)
 
