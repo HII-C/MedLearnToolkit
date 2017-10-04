@@ -29,14 +29,13 @@ def patientToVector(diagnoses):
             patient_matrix[row[1]] = [row[4]]
             patient_code[row[1]] = []
     # This loop needs to full set of observations to be formed, must wait to be iterated
-    # print(code_dict.keys())
     for patient_id in patient_matrix.keys():
         for code in code_dict.keys():
             if code in patient_matrix[patient_id]:
                 patient_code[patient_id].append(1)
             else:
                 patient_code[patient_id].append(0)
-
+                
     string_tuple = list()
     for x in patient_code.keys():
         string_tuple.append(int(x))
@@ -57,25 +56,22 @@ def patientToVector(diagnoses):
 
     count_y = 0
     imp_index = 0
-    # print(len(diagnoses_dict.keys()))
+    
     for item in patient_code.keys():
         X[count_y] = np.array(patient_code[item])
-        # print(diagnoses_dict[item])
         if (diagnoses in diagnoses_dict[item]):
             y[count_y] = 1
         else:
             y[count_y] = 0
 
         count_y += 1
-    # print(y)
-    # clf = svm.SVC(C=100, random_state = 0)
-    alphas = [.0001, .001, .01, .1, 1, 10]
+    
     regr = linear_model.LogisticRegressionCV()
+    regr.fit(X, y)
+    print(regr.coef_)
     # scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
     # best_alpha = alphas[scores.index(max(scores))]
     # regr.alpha = best_alpha
-    regr.fit(X, y)
-    print(regr.coef_)
     # query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 10000;").format(diagnoses)
     # cur.execute(query_string)
     # prediction_rows = cur.fetchall()
