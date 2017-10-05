@@ -142,7 +142,14 @@ testing.code_generation()
 visit_sparse = testing.sparse_matrix_generation_by_visit()
 test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
 _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
+_dict = dict()
+count = 0
+for item in testing.code_dict.keys():
+    _dict[item] = _list[count]
+    count += 1
+_list = _dict.items()
 _list.sort()
 new_list = _list[0][::-1]
 print(new_list)
 print(new_list[:5])
+print(list(_dict.keys())[list(_dict.values()).index(new_list[0])])
