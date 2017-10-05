@@ -101,6 +101,36 @@ class no_ref_codes():
             count_y += 1
         return X, y
 
+
+    def array_generation_for_ml_patient(self, patient_matrix):
+        string_tuple = list()
+        for x in patient_matrix.keys():
+            string_tuple.append(int(x))
+        string_tuple = tuple(string_tuple)
+
+        query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE subject_id in {}").format(string_tuple)
+        self.cur.execute(query_string)
+        diagnoses_rows = self.cur.fetchall()
+        diagnoses_dict = {}
+        for item in diagnoses_rows:
+            if item[1] in diagnoses_dict.keys():
+                diagnoses_dict[item[1]].append(item[4])
+            else:
+                diagnoses_dict[item[1]] = [item[4]]
+
+        X = np.zeros(shape=(len(diagnoses_dict.keys()), len(self.code_dict.keys())))
+        y = np.zeros(shape=(len(diagnoses_dict.keys())))
+
+        count_y = 0
+        for item in diagnoses_dict.keys():
+            X[count_y] = np.array(patient_matrix[item])
+            if (self.diagnoses in diagnoses_dict[item]):
+                y[count_y] = 1
+            else:
+                y[count_y] = 0
+            count_y += 1
+        return X, y
+
     def learning_by_diagnoses_lasso(self, X, y, query_size):
         alphas = np.logspace(-4, -1, 15)
         regr = linear_model.LassoLars()
@@ -146,6 +176,24 @@ _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
 _dict = dict()
 count = 0
 for item in testing.code_dict.keys():
+    _dict[_list[0][count]] = item
+    count += 1
+_list.sort()
+new_list = _list[0][::-1]
+print(new_list)
+print(new_list[:5])
+for item in new_list[:5]:
+    print(_dict[item])
+
+
+patient = no_ref_codes('25000')
+patient.code_generation(10000)
+patient_sparse = patient.sparse_matrix_generation_by_patient()
+test1, test2 = patient.array_generation_for_ml_patient(patient_sparse)
+_list = patient.learning_by_diagnoses_logisticCV(test1, test2)
+_dict = dict()
+count = 0
+for item in patient.code_dict.keys():
     _dict[_list[0][count]] = item
     count += 1
 _list.sort()
