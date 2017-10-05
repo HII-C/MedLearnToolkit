@@ -22,7 +22,7 @@ class no_ref_codes():
     def code_generation(self):
         patient_matrix = {}
         code_dict = {}
-        self.cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 100000;")
+        self.cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 1000;")
         rows = self.cur.fetchall()
         visit_matrix = {}
         visit_count = 0
@@ -107,7 +107,7 @@ class no_ref_codes():
         best_alpha = alphas[scores.index(max(scores))]
         regr.alpha = best_alpha
         regr.fit(X, y)
-        query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 100000;").format(self.diagnoses)
+        query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 1000;").format(self.diagnoses)
         self.cur.execute(query_string)
         prediction_rows = self.cur.fetchall()
         
@@ -132,7 +132,8 @@ class no_ref_codes():
 
     def learning_by_diagnoses_logisticCV(self, X, y):
         regr = linear_model.LogisticRegressionCV()
-        return(regr.fit(X, y))
+        regr.fit(X,y)
+        return regr.coef_
 
 
 
@@ -140,7 +141,8 @@ testing = no_ref_codes('41401')
 testing.code_generation()
 visit_sparse = testing.sparse_matrix_generation_by_visit()
 test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
-unordered_list = testing.learning_by_diagnoses_logisticCV(test1, test2)
-ordered_list = unordered_list.sort()
-print(ordered_list[::5])
-
+_list = testing.learning_by_diagnoses_logisticCV(test1, test2)
+_list.sort()
+new_list = _list[0][::-1]
+print(new_list)
+print(new_list[:5])
