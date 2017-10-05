@@ -22,7 +22,7 @@ class no_ref_codes():
     def code_generation(self):
         patient_matrix = {}
         code_dict = {}
-        self.cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 1000;")
+        self.cur.execute("SELECT * from mimiciii.INPUTEVENTS_MV limit 1000;")
         rows = self.cur.fetchall()
         visit_matrix = {}
         visit_count = 0
@@ -30,15 +30,15 @@ class no_ref_codes():
             # row[1] = patient_id, row[2] = visit_id, row[4] = icd_9_code
             if row[1] in patient_matrix.keys():
                 if row[2] in patient_matrix[row[1]].keys():
-                    if (row[4] in code_dict.keys()):
+                    if (row[6] in code_dict.keys()):
                         patient_matrix[row[1]][row[2]].append(row[4])
                     else:
-                        code_dict[row[4]] = row[4]
-                        patient_matrix[row[1]][row[2]].append([row[4]])
+                        code_dict[row[6]] = row[6]
+                        patient_matrix[row[1]][row[2]].append([row[6]])
                 else:
-                    patient_matrix[row[1]][row[2]] = [row[4]]
+                    patient_matrix[row[1]][row[2]] = [row[6]]
             else:
-                patient_matrix[row[1]] = {row[2]: [row[4]]}
+                patient_matrix[row[1]] = {row[2]: [row[6]]}
         self.code_dict = code_dict
         self.patient_matrix = patient_matrix
 
@@ -113,11 +113,11 @@ class no_ref_codes():
         
         for row in prediction_rows:
             if (row[2] not in self.visit_matrix.keys()):
-                self.cur.execute(("SELECT * from mimiciii.PROCEDURES_ICD WHERE hadm_id = \'{}\';").format(row[2]))
+                self.cur.execute(("SELECT * from mimiciii.INPUTEVENTS_MV WHERE hadm_id = \'{}\';").format(row[2]))
                 rows = self.cur.fetchall()
                 this_patient = list()
                 for r in rows:
-                    this_patient.append(r[4])
+                    this_patient.append(r[6])
 
                 for r in rows:
                     vis_arr = []
