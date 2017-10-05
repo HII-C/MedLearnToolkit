@@ -19,10 +19,11 @@ class no_ref_codes():
     patient_matrix = dict()
     visit_matrix = dict()
 
-    def code_generation(self):
+    def code_generation(self, query_size):
         patient_matrix = {}
         code_dict = {}
-        self.cur.execute("SELECT * from mimiciii.INPUTEVENTS_MV limit 1000;")
+        query_string = ("SELECT * from mimiciii.INPUTEVENTS_MV limit {};").format(query_size)
+        self.cur.execute(query_string)
         rows = self.cur.fetchall()
         visit_matrix = {}
         visit_count = 0
@@ -100,14 +101,14 @@ class no_ref_codes():
             count_y += 1
         return X, y
 
-    def learning_by_diagnoses_lasso(self, X, y):
+    def learning_by_diagnoses_lasso(self, X, y, query_size):
         alphas = np.logspace(-4, -1, 15)
         regr = linear_model.LassoLars()
         scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
         best_alpha = alphas[scores.index(max(scores))]
         regr.alpha = best_alpha
         regr.fit(X, y)
-        query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 1000;").format(self.diagnoses)
+        query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit {};").format(self.diagnoses, query_size)
         self.cur.execute(query_string)
         prediction_rows = self.cur.fetchall()
         
@@ -138,7 +139,7 @@ class no_ref_codes():
 
 
 testing = no_ref_codes('25000')
-testing.code_generation()
+testing.code_generation(10000)
 visit_sparse = testing.sparse_matrix_generation_by_visit()
 test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
 _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
