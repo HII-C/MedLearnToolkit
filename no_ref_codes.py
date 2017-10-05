@@ -140,5 +140,7 @@ testing = no_ref_codes('41401')
 testing.code_generation()
 visit_sparse = testing.sparse_matrix_generation_by_visit()
 test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
-testing.learning_by_diagnoses_lasso(test1, test2)
+unordered_list = testing.learning_by_diagnoses_logisticCV(test1, test2)
+ordered_list = unordered_list.sort()
+print(ordered_list[::5])
 
