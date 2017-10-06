@@ -52,10 +52,10 @@ class no_ref_codes():
         visit_count = 0
 
         for patient_id in self.patient_matrix.keys():
-            for visit_id in self.patient_matrix[patient_id].keys():
+            for visit_id in self.visit_matrix[patient_id].keys():
                 visit_sparse_matrix[visit_id] = []
                 for code in self.code_dict.keys():
-                    if code in self.patient_matrix[patient_id][visit_id]:
+                    if code in self.visit_matrix[patient_id][visit_id]:
                         visit_sparse_matrix[visit_id].append(1)
 
                     else:
@@ -146,7 +146,7 @@ class no_ref_codes():
         prediction_rows = self.cur.fetchall()
         
         for row in prediction_rows:
-            if (row[2] not in self.visit_matrix.keys()):
+            if (row[2] not in self.patient_matrix.keys()):
                 self.cur.execute(("SELECT * from mimiciii.INPUTEVENTS_MV WHERE hadm_id = \'{}\';").format(row[2]))
                 rows = self.cur.fetchall()
                 this_patient = list()
