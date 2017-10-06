@@ -188,15 +188,12 @@ print(new_list[:5])
 for item in new_list[:5]:
     print(_dict[item])
 
-
-patient = no_ref_codes('25000')
-patient.code_generation(10000)
-patient_sparse = patient.sparse_matrix_generation_by_patient()
-test1, test2 = patient.array_generation_for_ml_patient(patient_sparse)
-_list = patient.learning_by_diagnoses_logisticCV(test1, test2)
+patient_sparse = testing.sparse_matrix_generation_by_patient()
+test1, test2 = testing.array_generation_for_ml_patient(patient_sparse)
+_list = testing.learning_by_diagnoses_logisticCV(test1, test2)
 _dict = dict()
 count = 0
-for item in patient.code_dict.keys():
+for item in testing.code_dict.keys():
     _dict[_list[0][count]] = item
     count += 1
 _list.sort()
