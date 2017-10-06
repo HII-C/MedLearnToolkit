@@ -29,19 +29,22 @@ class no_ref_codes():
         visit_count = 0
         for row in rows:
             # row[1] = patient_id, row[2] = visit_id, row[4] = icd_9_code
-            if row[1] in patient_matrix.keys():
-                if row[2] in patient_matrix[row[1]].keys():
+            if row[1] in visit_matrix.keys():
+                patient_matrix[row[1]].append(row[6])
+                if row[2] in visit_matrix[row[1]].keys():
                     if (row[6] in code_dict.keys()):
-                        patient_matrix[row[1]][row[2]].append(row[4])
+                        visit_matrix[row[1]][row[2]].append(row[6])
                     else:
                         code_dict[row[6]] = row[6]
-                        patient_matrix[row[1]][row[2]].append([row[6]])
+                        visit_matrix[row[1]][row[2]].append([row[6]])
                 else:
-                    patient_matrix[row[1]][row[2]] = [row[6]]
+                    visit_matrix[row[1]][row[2]] = [row[6]]
             else:
-                patient_matrix[row[1]] = {row[2]: [row[6]]}
+                patient_matrix[row[1]] = [row[6]]
+                visit_matrix[row[1]] = {row[2]: [row[6]]}
         self.code_dict = code_dict
         self.patient_matrix = patient_matrix
+        self.visit_matrix = visit_matrix
 
 
     def sparse_matrix_generation_by_visit(self):

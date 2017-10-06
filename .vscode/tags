@@ -13,17 +13,21 @@ LogisticRegression	../no_ref_codes.py	/^from sklearn.linear_model import Logisti
 LogisticRegressionCV	../function_no_visit.py	/^from sklearn.linear_model import LogisticRegression, LogisticRegressionCV$/;"	kind:namespace	line:3
 LogisticRegressionCV	../no_ref_codes.py	/^from sklearn.linear_model import LogisticRegression, LogisticRegressionCV$/;"	kind:namespace	line:3
 __init__	../no_ref_codes.py	/^    def __init__(self, diagnoses):$/;"	kind:member	line:13
-_dict	../no_ref_codes.py	/^_dict = dict()$/;"	kind:variable	line:146
-_list	../no_ref_codes.py	/^_list = testing.learning_by_diagnoses_logisticCV(test1, test2)$/;"	kind:variable	line:145
+_dict	../no_ref_codes.py	/^_dict = dict()$/;"	kind:variable	line:177
+_dict	../no_ref_codes.py	/^_dict = dict()$/;"	kind:variable	line:195
+_list	../no_ref_codes.py	/^_list = patient.learning_by_diagnoses_logisticCV(test1, test2)$/;"	kind:variable	line:194
+_list	../no_ref_codes.py	/^_list = testing.learning_by_diagnoses_logisticCV(test1, test2)$/;"	kind:variable	line:176
 anchorCode.py	../anchorCode.py	1;"	kind:file	line:1
-array_generation_for_ml_visit	../no_ref_codes.py	/^    def array_generation_for_ml_visit(self, visit_matrix):$/;"	kind:member	line:75
+array_generation_for_ml_patient	../no_ref_codes.py	/^    def array_generation_for_ml_patient(self, patient_matrix):$/;"	kind:member	line:106
+array_generation_for_ml_visit	../no_ref_codes.py	/^    def array_generation_for_ml_visit(self, visit_matrix):$/;"	kind:member	line:76
 article_id	../pubmed_eFetch.py	/^	article_id = get_response['PubmedArticleSet']['PubmedArticle'][index]['MedlineCitation']['PMID']['#text']$/;"	kind:variable	line:31
 article_type_list	../pubmed_eFetch.py	/^	article_type_list = list()$/;"	kind:variable	line:33
 article_type_string	../pubmed_eFetch.py	/^	article_type_string = (' | '.join(article_type_list)).replace('[', '').replace(']', '')$/;"	kind:variable	line:47
 code_dict	../no_ref_codes.py	/^    code_dict = dict()$/;"	kind:variable	line:18
 code_generation	../no_ref_codes.py	/^    def code_generation(self, query_size):$/;"	kind:member	line:22
 conn	../no_ref_codes.py	/^    conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")$/;"	kind:variable	line:16
-count	../no_ref_codes.py	/^count = 0$/;"	kind:variable	line:147
+count	../no_ref_codes.py	/^count = 0$/;"	kind:variable	line:178
+count	../no_ref_codes.py	/^count = 0$/;"	kind:variable	line:196
 count_dict	../pubmed_eFetch.py	/^count_dict = dict()$/;"	kind:variable	line:14
 cur	../no_ref_codes.py	/^    cur = conn.cursor()$/;"	kind:variable	line:17
 db	../dbReduc.py	/^db = pymysql.connect('localhost', 'root', password, db_name)$/;"	kind:variable	line:6
@@ -40,14 +44,15 @@ function_no_visit.py	../function_no_visit.py	1;"	kind:file	line:1
 get_response	../pubmed_eFetch.py	/^get_response = (xmltodict.parse(raw_response.content))$/;"	kind:variable	line:27
 getpass	../dbReduc.py	/^import getpass$/;"	kind:namespace	line:2
 getpass	../pubmed_eFetch.py	/^import getpass$/;"	kind:namespace	line:1
-learning_by_diagnoses_lasso	../no_ref_codes.py	/^    def learning_by_diagnoses_lasso(self, X, y, query_size):$/;"	kind:member	line:104
-learning_by_diagnoses_logisticCV	../no_ref_codes.py	/^    def learning_by_diagnoses_logisticCV(self, X, y):$/;"	kind:member	line:134
+learning_by_diagnoses_lasso	../no_ref_codes.py	/^    def learning_by_diagnoses_lasso(self, X, y, query_size):$/;"	kind:member	line:135
+learning_by_diagnoses_logisticCV	../no_ref_codes.py	/^    def learning_by_diagnoses_logisticCV(self, X, y):$/;"	kind:member	line:165
 linear_model	../function_no_visit.py	/^from sklearn import linear_model$/;"	kind:namespace	line:5
 linear_model	../no_ref_codes.py	/^from sklearn import linear_model$/;"	kind:namespace	line:5
 list_of_mesh	../pubmed_eFetch.py	/^	list_of_mesh = list()$/;"	kind:variable	line:32
 math	../function_no_visit.py	/^import math$/;"	kind:namespace	line:1
 math	../no_ref_codes.py	/^import math$/;"	kind:namespace	line:1
-new_list	../no_ref_codes.py	/^new_list = _list[0][::-1]$/;"	kind:variable	line:152
+new_list	../no_ref_codes.py	/^new_list = _list[0][::-1]$/;"	kind:variable	line:183
+new_list	../no_ref_codes.py	/^new_list = _list[0][::-1]$/;"	kind:variable	line:201
 no_ref_codes	../no_ref_codes.py	/^class no_ref_codes():$/;"	kind:class	line:11
 no_ref_codes.py	../no_ref_codes.py	1;"	kind:file	line:1
 np	../function_no_visit.py	/^import numpy as np$/;"	kind:namespace	line:7
@@ -55,8 +60,10 @@ np	../no_ref_codes.py	/^import numpy as np$/;"	kind:namespace	line:7
 parsed_response	../pubmed_eFetch.py	/^parsed_response = (xmltodict.parse(response.content))$/;"	kind:variable	line:24
 password	../dbReduc.py	/^password = getpass.getpass()$/;"	kind:variable	line:4
 password	../pubmed_eFetch.py	/^password = getpass.getpass()$/;"	kind:variable	line:6
+patient	../no_ref_codes.py	/^patient = no_ref_codes('25000')$/;"	kind:variable	line:190
 patientToVector	../function_no_visit.py	/^def patientToVector(diagnoses):$/;"	kind:function	line:10
 patient_matrix	../no_ref_codes.py	/^    patient_matrix = dict()$/;"	kind:variable	line:19
+patient_sparse	../no_ref_codes.py	/^patient_sparse = patient.sparse_matrix_generation_by_patient()$/;"	kind:variable	line:192
 post_url	../pubmed_eFetch.py	/^	post_url = post_url + (",{}").format(str(item[0]))$/;"	kind:variable	line:20
 predication_rows	../dbReduc.py	/^predication_rows = dbCur.fetchall()$/;"	kind:variable	line:14
 psycopg2	../function_no_visit.py	/^import psycopg2$/;"	kind:namespace	line:2
@@ -75,8 +82,8 @@ sparse_matrix_generation_by_patient	../no_ref_codes.py	/^    def sparse_matrix_g
 sparse_matrix_generation_by_visit	../no_ref_codes.py	/^    def sparse_matrix_generation_by_visit(self):$/;"	kind:member	line:47
 svm	../function_no_visit.py	/^from sklearn import svm$/;"	kind:namespace	line:6
 svm	../no_ref_codes.py	/^from sklearn import svm$/;"	kind:namespace	line:6
-testing	../no_ref_codes.py	/^testing = no_ref_codes('25000')$/;"	kind:variable	line:141
+testing	../no_ref_codes.py	/^testing = no_ref_codes('25000')$/;"	kind:variable	line:172
 visit_matrix	../no_ref_codes.py	/^    visit_matrix = dict()$/;"	kind:variable	line:20
-visit_sparse	../no_ref_codes.py	/^visit_sparse = testing.sparse_matrix_generation_by_visit()$/;"	kind:variable	line:143
+visit_sparse	../no_ref_codes.py	/^visit_sparse = testing.sparse_matrix_generation_by_visit()$/;"	kind:variable	line:174
 x_1	../pubmed_eFetch.py	/^		x_1 = (' | '.join(list_of_mesh)).replace('[', '').replace(']', '')$/;"	kind:variable	line:52
 xmltodict	../pubmed_eFetch.py	/^import xmltodict$/;"	kind:namespace	line:4
