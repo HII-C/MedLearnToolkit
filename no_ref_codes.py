@@ -180,23 +180,23 @@ class no_ref_codes():
         return(_list[0][::-1], _dict)
 
 
-testing = no_ref_codes('25000')
-testing.code_generation(10000)
-visit_sparse = testing.sparse_matrix_generation_by_visit()
-test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
-_list = testing.learning_by_diagnoses_logisticCV(test1, test2)
+# testing = no_ref_codes('25000')
+# testing.code_generation(10000)
+# visit_sparse = testing.sparse_matrix_generation_by_visit()
+# test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
+# _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
 
-new_list, _dict = testing.order_output_matrix(_list)
-print(new_list)
-print(new_list[:5])
-for item in new_list[:5]:
-    print(_dict[item])
+# new_list, _dict = testing.order_output_matrix(_list)
+# print(new_list)
+# print(new_list[:5])
+# for item in new_list[:5]:
+#     print(_dict[item])
 
-patient_sparse = testing.sparse_matrix_generation_by_patient()
-test1, test2 = testing.array_generation_for_ml_patient(patient_sparse)
-_list = testing.learning_by_diagnoses_logisticCV(test1, test2)
-new_list, _dict = testing.order_output_matrix(_list)
-print(new_list)
-print(new_list[:5])
-for item in new_list[:5]:
-    print(_dict[item])
+# patient_sparse = testing.sparse_matrix_generation_by_patient()
+# test1, test2 = testing.array_generation_for_ml_patient(patient_sparse)
+# _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
+# new_list, _dict = testing.order_output_matrix(_list)
+# print(new_list)
+# print(new_list[:5])
+# for item in new_list[:5]:
+#     print(_dict[item])
