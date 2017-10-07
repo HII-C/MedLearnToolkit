@@ -174,7 +174,7 @@ class no_ref_codes():
         _dict = dict()
         count = 0
         for item in self.code_dict.keys():
-            _dict[_list[0][count]] = item
+            _dict[_list[count]] = item
             count += 1
         _list.sort()
         return(_list[0][::-1], _dict)
