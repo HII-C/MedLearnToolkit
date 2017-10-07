@@ -177,7 +177,7 @@ class no_ref_codes():
             _dict[_list[count]] = item
             count += 1
         _list.sort()
-        return(_list[0][::-1], _dict)
+        return(_list[::-1], _dict)
 
 
 # testing = no_ref_codes('25000')
