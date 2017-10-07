@@ -134,41 +134,50 @@ class no_ref_codes():
             count_y += 1
         return X, y
 
-    def learning_by_diagnoses_lasso(self, X, y, query_size):
-        alphas = np.logspace(-4, -1, 15)
+    def learning_by_diagnoses_lasso(self, X, y):
+        alphas = np.logspace(-4, -1, 10)
         regr = linear_model.LassoLars()
         scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
         best_alpha = alphas[scores.index(max(scores))]
         regr.alpha = best_alpha
         regr.fit(X, y)
-        query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit {};").format(self.diagnoses, query_size)
-        self.cur.execute(query_string)
-        prediction_rows = self.cur.fetchall()
+        return regr.coef_
+        # query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit {};").format(self.diagnoses, query_size)
+        # self.cur.execute(query_string)
+        # prediction_rows = self.cur.fetchall()
         
-        for row in prediction_rows:
-            if (row[2] not in self.patient_matrix.keys()):
-                self.cur.execute(("SELECT * from mimiciii.INPUTEVENTS_MV WHERE hadm_id = \'{}\';").format(row[2]))
-                rows = self.cur.fetchall()
-                this_patient = list()
-                for r in rows:
-                    this_patient.append(r[6])
+        # for row in prediction_rows:
+        #     if (row[2] not in self.patient_matrix.keys()):
+        #         self.cur.execute(("SELECT * from mimiciii.INPUTEVENTS_MV WHERE hadm_id = \'{}\';").format(row[2]))
+        #         rows = self.cur.fetchall()
+        #         this_patient = list()
+        #         for r in rows:
+        #             this_patient.append(r[6])
 
-                for r in rows:
-                    vis_arr = []
-                    for code in self.code_dict.keys():
-                        if code in this_patient:
-                            vis_arr.append(1)
-                        else:
-                            vis_arr.append(0)
-                print('Should only show once') 
-                print(regr.predict(np.array(vis_arr).reshape(1, -1)))
-                exit()
+        #         for r in rows:
+        #             vis_arr = []
+        #             for code in self.code_dict.keys():
+        #                 if code in this_patient:
+        #                     vis_arr.append(1)
+        #                 else:
+        #                     vis_arr.append(0)
+        #         print('Should only show once') 
+        #         print(regr.predict(np.array(vis_arr).reshape(1, -1)))
+        #         exit()
 
     def learning_by_diagnoses_logisticCV(self, X, y):
         regr = linear_model.LogisticRegressionCV()
         regr.fit(X,y)
         return regr.coef_
-
+    
+    def order_output_matrix(self, _list):
+        _dict = dict()
+        count = 0
+        for item in self.code_dict.keys():
+            _dict[_list[0][count]] = item
+            count += 1
+        _list.sort()
+        return(_list[0][::-1], _dict)
 
 
 testing = no_ref_codes('25000')
@@ -176,13 +185,8 @@ testing.code_generation(10000)
 visit_sparse = testing.sparse_matrix_generation_by_visit()
 test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
 _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
-_dict = dict()
-count = 0
-for item in testing.code_dict.keys():
-    _dict[_list[0][count]] = item
-    count += 1
-_list.sort()
-new_list = _list[0][::-1]
+
+new_list, _dict = testing.order_output_matrix(_list)
 print(new_list)
 print(new_list[:5])
 for item in new_list[:5]:
@@ -191,13 +195,7 @@ for item in new_list[:5]:
 patient_sparse = testing.sparse_matrix_generation_by_patient()
 test1, test2 = testing.array_generation_for_ml_patient(patient_sparse)
 _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
-_dict = dict()
-count = 0
-for item in testing.code_dict.keys():
-    _dict[_list[0][count]] = item
-    count += 1
-_list.sort()
-new_list = _list[0][::-1]
+new_list, _dict = testing.order_output_matrix(_list)
 print(new_list)
 print(new_list[:5])
 for item in new_list[:5]:
