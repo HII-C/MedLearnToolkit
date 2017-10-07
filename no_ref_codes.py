@@ -1,24 +1,26 @@
-import math
 import psycopg2
-from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
-from sklearn.model_selection import GridSearchCV, KFold
-from sklearn import linear_model
-from sklearn import svm
 import numpy as np
-import scipy
+from sklearn import linear_model
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 
+
+# NOTE: Look at potientally implementing GridSearchCV in the future
+# from sklearn.model_selection import GridSearchCV
 
 class no_ref_codes():
     diagnoses = ''
-    def __init__(self, diagnoses):
-        self.diagnoses = diagnoses
-    
+    code_dict = dict()
+    visit_matrix = dict()
+    patient_matrix = dict()
+
     conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")
     cur = conn.cursor()
-    code_dict = dict()
-    patient_matrix = dict()
-    visit_matrix = dict()
 
+    def __init__(self, diagnoses):
+        self.diagnoses = diagnoses
+
+    
+    # NOTE: Only used as we don't have static code dictionaries (LOINC, SNOMED, etc) loaded to @general right now
     def code_generation(self, query_size):
         patient_matrix = {}
         code_dict = {}
@@ -47,6 +49,7 @@ class no_ref_codes():
         self.visit_matrix = visit_matrix
 
 
+    # Generates a sparse attribute matrix based on HADM_ID's, higher resolution than patient, but might to "too much"
     def sparse_matrix_generation_by_visit(self):
         visit_sparse_matrix = dict()
         visit_count = 0
@@ -63,6 +66,9 @@ class no_ref_codes():
         return visit_sparse_matrix
 
 
+    # Generates a sparse attribute matrix by subject_id, less resolution but perhaps more "whole" picture
+    # NOTE: Both _visit and _patient need to be evalutated to know which is better
+    # We should explore creating a standard measure of success once we start training in earnest
     def sparse_matrix_generation_by_patient(self):
         patient_sparse_matrix = dict()
         for patient_id in self.patient_matrix.keys():
@@ -75,6 +81,8 @@ class no_ref_codes():
         return patient_sparse_matrix
 
 
+    # Creating the data structures needed for any regression/ML @ the visit resolution
+    # NOTE: We use contiguious blocks of memory with NumPy, this is crucial for performance
     def array_generation_for_ml_visit(self, visit_matrix):
         string_tuple = list()
         for x in visit_matrix.keys():
@@ -105,6 +113,8 @@ class no_ref_codes():
         return X, y
 
 
+    # Creating the data structures needed for any regression/ML @ the patient resolution
+    # NOTE: We use contiguious blocks of memory with NumPy, this is crucial for performance
     def array_generation_for_ml_patient(self, patient_matrix):
         string_tuple = list()
         for x in patient_matrix.keys():
@@ -134,6 +144,8 @@ class no_ref_codes():
             count_y += 1
         return X, y
 
+
+    # Logisitic Regression using Lasso optimization and Lars algorithm
     def learning_by_diagnoses_lasso(self, X, y):
         alphas = np.logspace(-4, -1, 10)
         regr = linear_model.LassoLars()
@@ -142,34 +154,18 @@ class no_ref_codes():
         regr.alpha = best_alpha
         regr.fit(X, y)
         return regr.coef_
-        # query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit {};").format(self.diagnoses, query_size)
-        # self.cur.execute(query_string)
-        # prediction_rows = self.cur.fetchall()
-        
-        # for row in prediction_rows:
-        #     if (row[2] not in self.patient_matrix.keys()):
-        #         self.cur.execute(("SELECT * from mimiciii.INPUTEVENTS_MV WHERE hadm_id = \'{}\';").format(row[2]))
-        #         rows = self.cur.fetchall()
-        #         this_patient = list()
-        #         for r in rows:
-        #             this_patient.append(r[6])
 
-        #         for r in rows:
-        #             vis_arr = []
-        #             for code in self.code_dict.keys():
-        #                 if code in this_patient:
-        #                     vis_arr.append(1)
-        #                 else:
-        #                     vis_arr.append(0)
-        #         print('Should only show once') 
-        #         print(regr.predict(np.array(vis_arr).reshape(1, -1)))
-        #         exit()
-
+    # Logisitic Regression using Cross-validation for alphas, hence no fit->score iteration like in lasso
     def learning_by_diagnoses_logisticCV(self, X, y):
         regr = linear_model.LogisticRegressionCV()
         regr.fit(X,y)
         return regr.coef_[0]
+
     
+    # Preserves and orders codes by values, though keys come from scoring matrix, so identical keys 
+    # (ex. {1, 0, 0, -1}, 0 is clearly duplicate) will map to 1 value (Condition/Observation code)
+    # In all cases I can think of this is inconsequential (non-integer values are floats which)
+    # have almost 0 chance of being identical, esp for the crucial in regression which are what we care about.
     def order_output_matrix(self, _list):
         _dict = dict()
         count = 0
@@ -178,25 +174,3 @@ class no_ref_codes():
             count += 1
         _list.sort()
         return(_list[::-1], _dict)
-
-
-# testing = no_ref_codes('25000')
-# testing.code_generation(10000)
-# visit_sparse = testing.sparse_matrix_generation_by_visit()
-# test1, test2 = testing.array_generation_for_ml_visit(visit_sparse)
-# _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
-
-# new_list, _dict = testing.order_output_matrix(_list)
-# print(new_list)
-# print(new_list[:5])
-# for item in new_list[:5]:
-#     print(_dict[item])
-
-# patient_sparse = testing.sparse_matrix_generation_by_patient()
-# test1, test2 = testing.array_generation_for_ml_patient(patient_sparse)
-# _list = testing.learning_by_diagnoses_logisticCV(test1, test2)
-# new_list, _dict = testing.order_output_matrix(_list)
-# print(new_list)
-# print(new_list[:5])
-# for item in new_list[:5]:
-#     print(_dict[item])
