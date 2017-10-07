@@ -8,7 +8,7 @@ list_out = grouping_base.learning_by_diagnoses_lasso(X, y)
 ordered_list, ordered_dict = grouping_base.order_output_matrix(list_out)
 
 query_tuple = list()
-for item in ordered_list[0:5]:
+for item in ordered_list[0:15]:
     query_tuple.append(ordered_dict[item])
     
 query_tuple = tuple(query_tuple)
@@ -17,6 +17,5 @@ grouping_base.cur.execute(query_string)
 query_result = grouping_base.cur.fetchall()
 
 for item in query_result:
-    print(item[1])
     print(item[2])
     print(item[6])
