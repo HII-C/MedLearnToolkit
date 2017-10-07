@@ -168,7 +168,7 @@ class no_ref_codes():
     def learning_by_diagnoses_logisticCV(self, X, y):
         regr = linear_model.LogisticRegressionCV()
         regr.fit(X,y)
-        return regr.coef_
+        return regr.coef_[0]
     
     def order_output_matrix(self, _list):
         _dict = dict()
