@@ -8,11 +8,6 @@ from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 # from sklearn.model_selection import GridSearchCV
 
 class no_ref_codes():
-    diagnoses = ''
-    code_dict = dict()
-    visit_matrix = dict()
-    patient_matrix = dict()
-
     conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")
     cur = conn.cursor()
 
