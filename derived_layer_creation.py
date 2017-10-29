@@ -70,7 +70,23 @@ class derived_layer_creation(object):
             print("Table creation failed, table might already exist, or other error. \n", ex)
 
 
-
+if __name__ == "__main__":
+    test_layer = derived_layer_creation()
+    test_layer.create_database("localhost", "root", "password", "der", True)
+    print("Would you like to exit? y/n")
+    resp = input()
+    if (resp == "y"):
+        exit()
+    test_layer.create_term_table("der", "UMLS")
+    print("Would you like to exit? y/n")
+    resp = input()
+    if (resp == "y"):
+        exit()
+    test_layer.create_concept_table("der", "UMLS")
+    print("Would you like to exit? y/n")
+    resp = input()
+    if (resp == "y"):
+        exit()
 # select AUI, CUI from UMLS.MRCONSO
 # into outfile -- blah some lookup (dict) file
 
