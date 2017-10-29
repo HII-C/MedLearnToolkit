@@ -14,7 +14,7 @@ class derived_layer_creation(object):
             user_check = input()
             if (user_check == "y"):
                 try:
-                    exec_str = ("REMOVE DATABASE IF EXISTS {};").format(name_)
+                    exec_str = ("DROP DATABASE IF EXISTS {};").format(name_)
                     self.cursor.execute(exec_str)
                     exec_str = ("CREATE DATABASE {};").format(name_)
                     self.cursor.execute(exec_str)
