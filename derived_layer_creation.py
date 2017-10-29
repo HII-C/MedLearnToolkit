@@ -14,7 +14,7 @@ class derived_layer_creation(object):
             user_check = input()
             if (user_check == "y"):
                 try:
-                    self.cursor.execute(("REMOVE DATABASE {};").format(name_))
+                    self.cursor.execute(("REMOVE DATABASE IF EXISTS {};").format(name_))
                     self.cursor.execute(("CREATE DATABASE {};").format(name_))
                 except Exception as ex:
                     print("Unable to drop with exception:", ex)
@@ -34,7 +34,7 @@ class derived_layer_creation(object):
             creation_str = ("create table {}.term (tid MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, str VARCHAR(200) UNIQUE, PRIMARY KEY(tid)) ENGINE = MYISAM;").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
-                insertion_str = ("insert into table {}.term(str) select distinct str from {}.MRCONSO;").format(derived_db_name, umls_db)
+                insertion_str = ("insert into table {}.term(str) select distinct STR from {}.MRCONSO;").format(derived_db_name, umls_db)
                 self.cursor.execute(insertion_str)
             except Exception as ex:
                 print("SQL Error with insertion, see attached error code:\n", ex)
@@ -49,7 +49,7 @@ class derived_layer_creation(object):
             creation_str = ("create table {}.concept (cid SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, cui CHAR(8) UNIQUE, str VARCHAR(200), PRIMARY KEY(cid)) ENGINE = MYISAM;").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
-                insertion_str = ("insert into {}.concept(cui) select DISTINCT cui, str from {}.MRCONSO where WHERE stt = 'PF' AND ts = 'P' AND ispref = 'Y' AND lat = 'ENG';").format(derived_db_name, umls_db)
+                insertion_str = ("insert into {}.concept(cui, str) select DISTINCT CUI, STR from {}.MRCONSO where WHERE STT = 'PF' AND TS = 'P' AND ISPREF = 'Y' AND LAT = 'ENG';").format(derived_db_name, umls_db)
                 self.cursor.execute(insertion_str)
             except Exception as ex:
                 print("SQL Error with insertion, see attached error code:\n", ex)
