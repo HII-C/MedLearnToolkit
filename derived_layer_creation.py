@@ -31,7 +31,7 @@ class derived_layer_creation(object):
 
     def create_term_table(self, derived_db_name, umls_db):
         try:
-            creation_str = ("create table {}.term (tid UNSIGNED MEDIUMINT NOT NULL AUTO_INCREMENT, str VARCHAR(200) UNIQUE, PRIMARY KEY(tid)) ENGINE = MYISAM;").format(derived_db_name)
+            creation_str = ("create table {}.term (tid MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, str VARCHAR(200) UNIQUE, PRIMARY KEY(tid)) ENGINE = MYISAM;").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
                 insertion_str = ("insert into table {}.term(str) select distinct str from {}.MRCONSO;").format(derived_db_name, umls_db)
@@ -46,7 +46,7 @@ class derived_layer_creation(object):
 
     def create_concept_table(self, derived_db_name, umls_db):
         try:
-            creation_str = ("create table {}.concept (cid UNSIGNED SMALLINT NOT NULL AUTO_INCREMENT, cui CHAR(8) UNIQUE, str VARCHAR(200), PRIMARY KEY(cid)) ENGINE = MYISAM;").format(derived_db_name)
+            creation_str = ("create table {}.concept (cid SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, cui CHAR(8) UNIQUE, str VARCHAR(200), PRIMARY KEY(cid)) ENGINE = MYISAM;").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
                 insertion_str = ("insert into {}.concept(cui) select DISTINCT cui, str from {}.MRCONSO where WHERE stt = 'PF' AND ts = 'P' AND ispref = 'Y' AND lat = 'ENG';").format(derived_db_name, umls_db)
@@ -59,7 +59,7 @@ class derived_layer_creation(object):
 
     def create_term_to_concept(self, derived_db_name, umls_db, term_table_name, concept_table_name):
         try:
-            creation_str = ("create table {}.term2concept (tid UNSIGNED MEDIUMINT NOT NULL, cid UNSIGNED SMALLINT NOT NULL, key(tid), key(cid));").format(derived_db_name)
+            creation_str = ("create table {}.term2concept (tid MEDIUMINT UNSIGNED NOT NULL, cid UNSIGNED SMALLINT NOT NULL, key(tid), key(cid));").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
                 insertion_str = ("insert into {0}.term2concept select {0}.{2}.tid, {3}.cid from {1}.MRCONSO, term t, concept c where cui = {0}.{2}.cid and str = {0}.{3}.str;").format(derived_db_name, umls_db, term_table_name, concept_table_name)
