@@ -1,14 +1,15 @@
 import psycopg2
+import pymysql
 import numpy as np
 
 class convert_to_cui(object):
     mimic_conn = psycopg2.connect("dbname='mimic' user='root' host='localhost' password='password'")
     mimic_cur = mimic_conn.cursor()
 
-    umls_conn = psycopg2.connect("dbname='UMLS' user='root' host='localhost' password='password'")
+    umls_conn = pymysql.connect("dbname='UMLS' user='root' host='localhost' password='password'")
     umls_cur = umls_conn.cursor()
 
-    mimic_cui_conn = psycopg2.connect("dbname='mimic_cui' user='root' host='localhost' password='password'")
+    mimic_cui_conn = pymysql.connect("dbname='mimic_cui' user='root' host='localhost' password='password'")
     mimic_cui_cur = mimic_cui_conn.connect()
 
     def __init__(self, diagnoses):
