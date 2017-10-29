@@ -7,8 +7,8 @@ class derived_layer_creation(object):
 
 
     def create_database(self, host_, user_, password_, name_, delete_):
-        connection = pymysql.connect(host=host_, user=user_, password=password_)
-        self.cursor = connection.cursor()
+        self.connection = pymysql.connect(host=host_, user=user_, password=password_)
+        self.cursor = self.connection.cursor()
         if (delete_ == True):
             print("Are you sure that you want to remove any existing derived database? y/n")
             user_check = input()
@@ -36,12 +36,13 @@ class derived_layer_creation(object):
             creation_str = ("create table {}.term (tid MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, str VARCHAR(200) UNIQUE, PRIMARY KEY(tid)) ENGINE = MYISAM;").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
-                insertion_str = ("insert into table {}.term(str) select distinct STR from {}.MRCONSO;").format(derived_db_name, umls_db)
+                insertion_str = ("insert into {}.term(str) select distinct STR from {}.MRCONSO;").format(derived_db_name, umls_db)
                 self.cursor.execute(insertion_str)
             except Exception as ex:
                 print("SQL Error with insertion, see attached error code:\n", ex)
         except Exception as ex:
             print("Table creation failed, table might already exist, or other error. \n", ex)
+        self.connection.commit()
         # Creating the greedy algorithm basis for NLP DB
         # select distinct str from UMLS.MRCONSO_NLP order by frequency desc;
 
@@ -57,6 +58,7 @@ class derived_layer_creation(object):
                 print("SQL Error with insertion, see attached error code:\n", ex)
         except Exception as ex:
             print("Table creation failed, table might already exist, or other error. \n", ex)
+        self.connection.commit()
 
 
     def create_term_to_concept(self, derived_db_name, umls_db, term_table_name, concept_table_name):
@@ -70,6 +72,7 @@ class derived_layer_creation(object):
                 print("SQL Error with insertion, see attached error code:\n", ex)
         except Exception as ex:
             print("Table creation failed, table might already exist, or other error. \n", ex)
+        self.connection.commit()
 
 
 if __name__ == "__main__":
