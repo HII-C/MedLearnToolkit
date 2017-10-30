@@ -18,6 +18,7 @@ class derived_layer_creation(object):
                     self.cursor.execute(exec_str)
                     exec_str = ("CREATE DATABASE {};").format(name_)
                     self.cursor.execute(exec_str)
+                    print("Database successfuly removed/created")
                 except Exception as ex:
                     print("Unable to drop with exception:", ex)
             else:
@@ -33,16 +34,16 @@ class derived_layer_creation(object):
 
     def create_term_table(self, derived_db_name, umls_db):
         try:
-            creation_str = ("create table {}.term (tid MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, str VARCHAR(200) UNIQUE, PRIMARY KEY(tid)) ENGINE = MYISAM;").format(derived_db_name)
+            creation_str = ("create table {}.term (tid MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT, str VARCHAR(500), PRIMARY KEY(tid)) ENGINE = MYISAM;").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
-                insertion_str = ("insert into {}.term(str) select distinct STR from {}.MRCONSO;").format(derived_db_name, umls_db)
+                insertion_str = ("insert into {}.term(str) select DISTINCT STR from {}.MRCONSO;").format(derived_db_name, umls_db)
                 self.cursor.execute(insertion_str)
             except Exception as ex:
-                print("SQL Error with insertion, see attached error code:\n", ex)
+                print("SQL Error with insertion on table TERM, see attached error code:\n", ex)
                 self.connection.commit()
         except Exception as ex:
-            print("Table creation failed, table might already exist, or other error. \n", ex)
+            print("Term table creation failed, table might already exist, or other error. \n", ex)
         self.connection.commit()
         # Creating the greedy algorithm basis for NLP DB
         # select distinct str from UMLS.MRCONSO_NLP order by frequency desc;
@@ -50,17 +51,16 @@ class derived_layer_creation(object):
 
     def create_concept_table(self, derived_db_name, umls_db):
         try:
-            creation_str = ("create table {}.concept (cid SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, cui CHAR(8) UNIQUE, str VARCHAR(300), PRIMARY KEY(cid)) ENGINE = MYISAM;").format(derived_db_name)
+            creation_str = ("create table {}.concept (cid MEDIUM UNSIGNED NOT NULL AUTO_INCREMENT, cui CHAR(8) UNIQUE, str VARCHAR(500), PRIMARY KEY(cid)) ENGINE = MYISAM;").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
-                insertion_str = ("insert into {}.concept(cui, str) select DISTINCT CUI, STR from {}.MRCONSO where WHERE STT = 'PF' AND TS = 'P' AND ISPREF = 'Y' AND LAT = 'ENG';").format(derived_db_name, umls_db)
+                insertion_str = ('insert into {0}.concept(cui, str) select DISTINCT CUI, STR from {1}.MRCONSO WHERE STT = "PF" AND TS = "P" AND ISPREF = "Y" AND LAT = "ENG";').format(derived_db_name, umls_db)
                 self.cursor.execute(insertion_str)
             except Exception as ex:
-                print("SQL Error with insertion, see attached error code:\n", ex)
+                print("SQL Error with insertion on table CONCEPT, see attached error code:\n", ex)
                 self.connection.commit()
         except Exception as ex:
-            print("Table creation failed, table might already exist, or other error. \n", ex)
-        self.connection.commit()
+            print("Concept table creation failed, table might already exist, or other error. \n", ex)
 
 
     def create_term_to_concept(self, derived_db_name, umls_db, term_table_name, concept_table_name):
@@ -81,20 +81,11 @@ class derived_layer_creation(object):
 if __name__ == "__main__":
     test_layer = derived_layer_creation()
     test_layer.create_database("localhost", "root", "password", "der", True)
-    print("Would you like to exit? y/n")
-    resp = input()
-    if (resp == "y"):
-        exit()
-    test_layer.create_term_table("der", "UMLS")
-    print("Would you like to exit? y/n")
-    resp = input()
-    if (resp == "y"):
-        exit()
+    # test_layer.create_term_table("der", "UMLS")
+    print("Term done")
     test_layer.create_concept_table("der", "UMLS")
-    print("Would you like to exit? y/n")
-    resp = input()
-    if (resp == "y"):
-        exit()
+    print("Done")
+    
 # select AUI, CUI from UMLS.MRCONSO
 # into outfile -- blah some lookup (dict) file
 

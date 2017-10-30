@@ -24,10 +24,10 @@ code_generation	../no_ref_codes.py	/^    def code_generation(self, query_size):$
 conn	../no_ref_codes.py	/^    conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")$/;"	kind:variable	line:11
 convert_to_cui	../remake_as_cui.py	/^class convert_to_cui(object):$/;"	kind:class	line:5
 count_dict	../pubmed_eFetch.py	/^count_dict = dict()$/;"	kind:variable	line:14
-create_concept_table	../derived_layer_creation.py	/^    def create_concept_table(self, derived_db_name, umls_db):$/;"	kind:member	line:50
+create_concept_table	../derived_layer_creation.py	/^    def create_concept_table(self, derived_db_name, umls_db):$/;"	kind:member	line:52
 create_database	../derived_layer_creation.py	/^    def create_database(self, host_, user_, password_, name_, delete_):$/;"	kind:member	line:9
-create_term_table	../derived_layer_creation.py	/^    def create_term_table(self, derived_db_name, umls_db):$/;"	kind:member	line:34
-create_term_to_concept	../derived_layer_creation.py	/^    def create_term_to_concept(self, derived_db_name, umls_db, term_table_name, concept_table_name):$/;"	kind:member	line:64
+create_term_table	../derived_layer_creation.py	/^    def create_term_table(self, derived_db_name, umls_db):$/;"	kind:member	line:35
+create_term_to_concept	../derived_layer_creation.py	/^    def create_term_to_concept(self, derived_db_name, umls_db, term_table_name, concept_table_name):$/;"	kind:member	line:67
 cur	../no_ref_codes.py	/^    cur = conn.cursor()$/;"	kind:variable	line:12
 db	../dbReduc.py	/^db = pymysql.connect('localhost', 'root', password, db_name)$/;"	kind:variable	line:6
 db	../pubmed_eFetch.py	/^db = pymysql.connect('localhost', 'root', password, db_name)$/;"	kind:variable	line:8
@@ -89,7 +89,6 @@ query_tuple	../grouping_ml_output.py	/^query_tuple = tuple(query_tuple)$/;"	kind
 raw_response	../pubmed_eFetch.py	/^raw_response = requests.get(get_url.format(parsed_response['ePostResult']['WebEnv'], parsed_response['ePostResult']['QueryKey']))$/;"	kind:variable	line:26
 remake_as_cui.py	../remake_as_cui.py	1;"	kind:file	line:1
 requests	../pubmed_eFetch.py	/^import requests$/;"	kind:namespace	line:3
-resp	../derived_layer_creation.py	/^    resp = input()$/;"	kind:variable	line:82
 resp	../derived_layer_creation.py	/^    resp = input()$/;"	kind:variable	line:87
 resp	../derived_layer_creation.py	/^    resp = input()$/;"	kind:variable	line:92
 response	../pubmed_eFetch.py	/^response = requests.post(post_url)$/;"	kind:variable	line:23
@@ -98,7 +97,7 @@ scipy	../function_no_visit.py	/^import scipy$/;"	kind:namespace	line:8
 sparse_matrix_generation_by_patient	../no_ref_codes.py	/^    def sparse_matrix_generation_by_patient(self):$/;"	kind:member	line:67
 sparse_matrix_generation_by_visit	../no_ref_codes.py	/^    def sparse_matrix_generation_by_visit(self):$/;"	kind:member	line:48
 svm	../function_no_visit.py	/^from sklearn import svm$/;"	kind:namespace	line:6
-test_layer	../derived_layer_creation.py	/^    test_layer = derived_layer_creation()$/;"	kind:variable	line:79
+test_layer	../derived_layer_creation.py	/^    test_layer = derived_layer_creation()$/;"	kind:variable	line:83
 umls_conn	../remake_as_cui.py	/^    umls_conn = pymysql.connect("dbname='UMLS' user='root' host='localhost' password='password'")$/;"	kind:variable	line:9
 umls_cur	../remake_as_cui.py	/^    umls_cur = umls_conn.cursor()$/;"	kind:variable	line:10
 x_1	../pubmed_eFetch.py	/^		x_1 = (' | '.join(list_of_mesh)).replace('[', '').replace(']', '')$/;"	kind:variable	line:52
