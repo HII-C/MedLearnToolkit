@@ -8,8 +8,7 @@ from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 # from sklearn.model_selection import GridSearchCV
 
 class no_ref_codes():
-    inp = input("Enter PostGRES password now.")
-    conn = psycopg2.connect(("dbname='mimic' user='postgres' host='db01.healthcreek.org' password={}").format(inp))
+    conn = psycopg2.connect(("dbname='mimic' user='postgres' host='db01.healthcreek.org' password='Super p0n13s'"))
     cur = conn.cursor()
 
     def __init__(self, diagnoses):
@@ -20,26 +19,26 @@ class no_ref_codes():
     def code_generation(self, query_size):
         patient_matrix = {}
         code_dict = {}
-        query_string = ("SELECT * from mimiciii.INPUTEVENTS_MV ORDER BY RAND() limit {};").format(query_size)
+        query_string = ("SELECT * from mimiciii.LABEVENTS ORDER BY RANDOM() limit {};").format(query_size)
         self.cur.execute(query_string)
         rows = self.cur.fetchall()
         visit_matrix = {}
         visit_count = 0
         for row in rows:
-            # row[1] = patient_id, row[2] = visit_id, row[4] = icd_9_code
+            # row[1] = patient_id, row[2] = visit_id, row[3] = itemid
             if row[1] in visit_matrix:
-                patient_matrix[row[1]].append(row[6])
+                patient_matrix[row[1]].append(row[3])
                 if row[2] in visit_matrix[row[1]]:
-                    if (row[6] in code_dict:
-                        visit_matrix[row[1]][row[2]].append(row[6])
+                    if (row[3] in code_dict):
+                        visit_matrix[row[1]][row[2]].append(row[3])
                     else:
-                        code_dict[row[6]] = row[6]
-                        visit_matrix[row[1]][row[2]].append([row[6]])
+                        code_dict[row[3]] = row[3]
+                        visit_matrix[row[1]][row[2]].append([row[3]])
                 else:
-                    visit_matrix[row[1]][row[2]] = [row[6]]
+                    visit_matrix[row[1]][row[2]] = [row[3]]
             else:
-                patient_matrix[row[1]] = [row[6]]
-                visit_matrix[row[1]] = {row[2]: [row[6]]}
+                patient_matrix[row[1]] = [row[3]]
+                visit_matrix[row[1]] = {row[2]: [row[3]]}
         self.code_dict = code_dict
         self.patient_matrix = patient_matrix
         self.visit_matrix = visit_matrix
@@ -84,7 +83,6 @@ class no_ref_codes():
         for x in visit_matrix:
             string_tuple.append(int(x))
         string_tuple = tuple(string_tuple)
-
         query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE hadm_id in {}").format(string_tuple)
         self.cur.execute(query_string)
         diagnoses_rows = self.cur.fetchall()
@@ -121,7 +119,7 @@ class no_ref_codes():
         self.cur.execute(query_string)
         diagnoses_rows = self.cur.fetchall()
         diagnoses_dict = {}
-        for item in diagnoses_rows.keys():
+        for item in diagnoses_rows:
             if item[1] in diagnoses_dict:
                 diagnoses_dict[item[1]].append(item[4])
             else:
