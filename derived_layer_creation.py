@@ -10,7 +10,7 @@ class derived_layer_creation(object):
         self.connection = pymysql.connect(host=host_, user=user_, password=password_)
         self.cursor = self.connection.cursor()
         if (delete_ == True):
-            print("Are you sure that you want to remove any existing derived database? y/n")
+            print("Are you sure that you want to remove the existing derived UMLS database? y/n")
             user_check = input()
             if (user_check == "y"):
                 try:
@@ -68,7 +68,8 @@ class derived_layer_creation(object):
             creation_str = ("create table {}.term2concept (tid MEDIUMINT UNSIGNED NOT NULL, cid UNSIGNED SMALLINT NOT NULL, key(tid), key(cid));").format(derived_db_name)
             self.cursor.execute(creation_str)
             try:
-                insertion_str = ("insert into {0}.term2concept select {0}.{2}.tid, {0}.{3}.cid from {1}.MRCONSO, term t, concept c where cui = {0}.{2}.cid and str = {0}.{3}.str;").format(derived_db_name, umls_db, term_table_name, concept_table_name)
+                #TODO: Not sure if this is going to work but can't test rn
+                insertion_str = ("insert into {0}.term2concept(tid, cid) select {0}.{2}.tid, {0}.{3}.cid from {1}.MRCONSO where cui = {0}.{2}.cid and str = {0}.{3}.str;").format(derived_db_name, umls_db, term_table_name, concept_table_name)
                 self.cursor.execute(insertion_str)
             except Exception as ex:
                 print("SQL Error with insertion, see attached error code:\n", ex)

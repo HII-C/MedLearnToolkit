@@ -19,17 +19,17 @@ class no_ref_codes():
     def code_generation(self, query_size):
         patient_matrix = {}
         code_dict = {}
-        query_string = ("SELECT * from mimiciii.INPUTEVENTS_MV limit {};").format(query_size)
+        query_string = ("SELECT * from mimiciii.INPUTEVENTS_MV ORDER BY RAND() limit {};").format(query_size)
         self.cur.execute(query_string)
         rows = self.cur.fetchall()
         visit_matrix = {}
         visit_count = 0
         for row in rows:
             # row[1] = patient_id, row[2] = visit_id, row[4] = icd_9_code
-            if row[1] in visit_matrix.keys():
+            if row[1] in visit_matrix:
                 patient_matrix[row[1]].append(row[6])
-                if row[2] in visit_matrix[row[1]].keys():
-                    if (row[6] in code_dict.keys()):
+                if row[2] in visit_matrix[row[1]]:
+                    if (row[6] in code_dict:
                         visit_matrix[row[1]][row[2]].append(row[6])
                     else:
                         code_dict[row[6]] = row[6]
@@ -49,10 +49,10 @@ class no_ref_codes():
         visit_sparse_matrix = dict()
         visit_count = 0
 
-        for patient_id in self.patient_matrix.keys():
-            for visit_id in self.visit_matrix[patient_id].keys():
+        for patient_id in self.patient_matrix:
+            for visit_id in self.visit_matrix[patient_id]:
                 visit_sparse_matrix[visit_id] = []
-                for code in self.code_dict.keys():
+                for code in self.code_dict:
                     if code in self.visit_matrix[patient_id][visit_id]:
                         visit_sparse_matrix[visit_id].append(1)
 
@@ -66,9 +66,9 @@ class no_ref_codes():
     # We should explore creating a standard measure of success once we start training in earnest
     def sparse_matrix_generation_by_patient(self):
         patient_sparse_matrix = dict()
-        for patient_id in self.patient_matrix.keys():
+        for patient_id in self.patient_matrix:
             patient_sparse_matrix[patient_id] = []
-            for code in self.code_dict.keys():
+            for code in self.code_dict:
                 if code in self.patient_matrix[patient_id]:
                     patient_sparse_matrix[patient_id].append(1)
                 else:
@@ -80,7 +80,7 @@ class no_ref_codes():
     # NOTE: We use contiguious blocks of memory with NumPy, this is crucial for performance
     def array_generation_for_ml_visit(self, visit_matrix):
         string_tuple = list()
-        for x in visit_matrix.keys():
+        for x in visit_matrix:
             string_tuple.append(int(x))
         string_tuple = tuple(string_tuple)
 
@@ -89,7 +89,7 @@ class no_ref_codes():
         diagnoses_rows = self.cur.fetchall()
         diagnoses_dict = {}
         for item in diagnoses_rows:
-            if item[2] in diagnoses_dict.keys():
+            if item[2] in diagnoses_dict:
                 diagnoses_dict[item[2]].append(item[4])
             else:
                 diagnoses_dict[item[2]] = [item[4]]
@@ -98,7 +98,7 @@ class no_ref_codes():
         y = np.zeros(shape=(len(diagnoses_dict.keys())))
 
         count_y = 0
-        for item in diagnoses_dict.keys():
+        for item in diagnoses_dict:
             X[count_y] = np.array(visit_matrix[item])
             if (self.diagnoses in diagnoses_dict[item]):
                 y[count_y] = 1
@@ -120,8 +120,8 @@ class no_ref_codes():
         self.cur.execute(query_string)
         diagnoses_rows = self.cur.fetchall()
         diagnoses_dict = {}
-        for item in diagnoses_rows:
-            if item[1] in diagnoses_dict.keys():
+        for item in diagnoses_rows.keys():
+            if item[1] in diagnoses_dict:
                 diagnoses_dict[item[1]].append(item[4])
             else:
                 diagnoses_dict[item[1]] = [item[4]]
