@@ -8,7 +8,8 @@ from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 # from sklearn.model_selection import GridSearchCV
 
 class no_ref_codes():
-    conn = psycopg2.connect("dbname='mimic' user='student' host='localhost' password='password'")
+    inp = input("Enter PostGRES password now.")
+    conn = psycopg2.connect(("dbname='mimic' user='postgres' host='db01.healthcreek.org' password={}").format(inp))
     cur = conn.cursor()
 
     def __init__(self, diagnoses):
