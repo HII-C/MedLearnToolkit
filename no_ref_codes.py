@@ -29,7 +29,7 @@ class no_ref_codes():
             if row[1] in visit_matrix:
                 patient_matrix[row[1]].append(row[from_index])
                 if row[2] in visit_matrix[row[1]]:
-                    if (row[3] in code_dict):
+                    if (row[from_index] in code_dict):
                         visit_matrix[row[1]][row[2]].append(row[from_index])
                     else:
                         code_dict[row[from_index]] = row[from_index]
