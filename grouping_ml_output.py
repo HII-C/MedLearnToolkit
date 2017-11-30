@@ -1,4 +1,5 @@
 import no_ref_codes as nrc
+from prettytable import PrettyTable
 
 demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", \
                 "results":["D_ICD_DIAGNOSES", "ICD9_CODE"],"from_index": 4, "print_index": 3},\
@@ -29,14 +30,24 @@ for item in demo_list:
     result_list[item['from']][1].append(query_result)
 
 keys = list(result_list.keys())
-print(result_list)
-print(("\t\t{0}\t\t|\t\t{1}\t\t|\t\t{2}").format(\
-    result_list[keys[0]][0],\
-    result_list[keys[1]][0],\
-    result_list[keys[2]][0]))
+# print(result_list)
+# print(("\t\t{0}\t\t|\t\t{1}\t\t|\t\t{2}").format(\
+#     result_list[keys[0]][0],\
+#     result_list[keys[1]][0],\
+#     result_list[keys[2]][0]))
+# for index, item in enumerate(result_list[keys[0]][1][0]):
+#     print(("{0}\t\t|{1}\t\t|{2}").format(\
+#         result_list[keys[0]][1][0][index][demo_list[0]["print_index"]],\
+#         result_list[keys[1]][1][0][index][demo_list[1]["print_index"]],\
+#         result_list[keys[2]][1][0][index][demo_list[2]["print_index"]]))
+
+result_table = PrettyTable(result_list[keys[0]][0],\
+                            result_list[keys[1]][0],\
+                            result_list[keys[2]][0])
 
 for index, item in enumerate(result_list[keys[0]][1][0]):
-    print(("{0}\t\t|{1}\t\t|{2}").format(\
+    result_table.add_row(
         result_list[keys[0]][1][0][index][demo_list[0]["print_index"]],\
         result_list[keys[1]][1][0][index][demo_list[1]["print_index"]],\
-        result_list[keys[2]][1][0][index][demo_list[2]["print_index"]]))
+        result_list[keys[2]][1][0][index][demo_list[2]["print_index"]])
+
