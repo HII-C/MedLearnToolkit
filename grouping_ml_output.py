@@ -1,5 +1,18 @@
 import no_ref_codes as nrc
-from prettytable import PrettyTable
+import prettytable.PrettyTable as PrettyTable
+import inquirer
+import os
+import sys
+import re
+sys.path.append(os.path.realpath('.'))
+
+questions = [
+  inquirer.List('size',
+                message="Which disease would you like to find relations for?",
+                choices=['Congestive Heart Failure', 'Type 2 Diabetes'],
+            ),]
+answers = inquirer.prompt(questions)
+print(answers["size"])
 
 demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", \
                 "results":["D_ICD_DIAGNOSES", "ICD9_CODE"],"from_index": 4, "print_index": 3},\
@@ -50,4 +63,6 @@ for index, item in enumerate(result_list[keys[0]][1][0]):
         result_list[keys[0]][1][0][index][demo_list[0]["print_index"]],\
         result_list[keys[1]][1][0][index][demo_list[1]["print_index"]],\
         result_list[keys[2]][1][0][index][demo_list[2]["print_index"]])
+
+print(result_table)
 
