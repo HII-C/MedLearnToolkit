@@ -29,8 +29,8 @@ print(("Okay, finding relations for {}").format(answers['size']))
 for item in demo_list:
     grouping_base = nrc.no_ref_codes(code_choices[answers['size']])
     grouping_base.code_generation(item["from"], 20000, item['from_index'])
-    patient_data = grouping_base.sparse_matrix_generation_by_patient()
-    X, y = grouping_base.array_generation_for_ml_patient(item['to'], patient_data)
+    patient_data = grouping_base.sparse_matrix_generation_by_visit()
+    X, y = grouping_base.array_generation_for_ml_visit(item['to'], patient_data)
     list_out = grouping_base.learning_by_target_lasso(X, y)
     ordered_list, ordered_dict = grouping_base.order_output_matrix(list_out)
 
@@ -45,17 +45,6 @@ for item in demo_list:
     result_list[item['from']][1].append(query_result)
 
 keys = list(result_list.keys())
-# print(result_list)
-# print(("\t\t{0}\t\t|\t\t{1}\t\t|\t\t{2}").format(\
-#     result_list[keys[0]][0],\
-#     result_list[keys[1]][0],\
-#     result_list[keys[2]][0]))
-# for index, item in enumerate(result_list[keys[0]][1][0]):
-#     print(("{0}\t\t|{1}\t\t|{2}").format(\
-#         result_list[keys[0]][1][0][index][demo_list[0]["print_index"]],\
-#         result_list[keys[1]][1][0][index][demo_list[1]["print_index"]],\
-#         result_list[keys[2]][1][0][index][demo_list[2]["print_index"]]))
-
 result_table = PrettyTable([result_list[keys[0]][0],\
                             result_list[keys[1]][0],\
                             result_list[keys[2]][0]])
@@ -68,6 +57,5 @@ try:
 except IndexError as ex:
     pass
 finally:
-
     print(result_table)
 

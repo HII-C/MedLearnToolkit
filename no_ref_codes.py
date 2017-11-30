@@ -32,8 +32,9 @@ class no_ref_codes():
                     if (row[from_index] in code_dict):
                         visit_matrix[row[1]][row[2]].append(row[from_index])
                     else:
-                        code_dict[row[from_index]] = row[from_index]
-                        visit_matrix[row[1]][row[2]].append([row[from_index]])
+                        if (row[from_index] not in self.target):
+                            code_dict[row[from_index]] = row[from_index]
+                            visit_matrix[row[1]][row[2]].append([row[from_index]])
                 else:
                     visit_matrix[row[1]][row[2]] = [row[from_index]]
             else:
@@ -55,7 +56,6 @@ class no_ref_codes():
                 for code in self.code_dict:
                     if code in self.visit_matrix[patient_id][visit_id]:
                         visit_sparse_matrix[visit_id].append(1)
-
                     else:
                         visit_sparse_matrix[visit_id].append(0)
         return visit_sparse_matrix
@@ -100,10 +100,9 @@ class no_ref_codes():
         for item in target_dict:
             X[count_y] = np.array(visit_matrix[item])
             for tar in self.target:
-                if (self.target in target_dict[item]):
+                if (tar in target_dict[item]):
                     y[count_y] = 1
-                    break
-                else:
+                elif y[count_y] != 1:
                     y[count_y] = 0
             count_y += 1
         return X, y
@@ -136,8 +135,7 @@ class no_ref_codes():
             for tar in self.target:
                 if (tar in target_dict[item]):
                     y[count_y] = 1
-                    break
-                else:
+                elif y[count_y] != 1:
                     y[count_y] = 0
             count_y += 1 
         return X, y
