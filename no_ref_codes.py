@@ -99,10 +99,12 @@ class no_ref_codes():
         count_y = 0
         for item in target_dict:
             X[count_y] = np.array(visit_matrix[item])
-            if (self.target in target_dict[item]):
-                y[count_y] = 1
-            else:
-                y[count_y] = 0
+            for tar in self.target:
+                if (self.target in target_dict[item]):
+                    y[count_y] = 1
+                    break
+                else:
+                    y[count_y] = 0
             count_y += 1
         return X, y
 
@@ -131,11 +133,13 @@ class no_ref_codes():
         count_y = 0
         for item in target_dict.keys():
             X[count_y] = np.array(patient_matrix[item])
-            if (self.target in target_dict[item]):
-                y[count_y] = 1
-            else:
-                y[count_y] = 0
-            count_y += 1
+            for tar in self.target:
+                if (tar in target_dict[item]):
+                    y[count_y] = 1
+                    break
+                else:
+                    y[count_y] = 0
+            count_y += 1 
         return X, y
 
 

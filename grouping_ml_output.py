@@ -1,5 +1,5 @@
 import no_ref_codes as nrc
-import prettytable.PrettyTable as PrettyTable
+from prettytable import PrettyTable
 import inquirer
 import os
 import sys
@@ -9,10 +9,11 @@ sys.path.append(os.path.realpath('.'))
 questions = [
   inquirer.List('size',
                 message="Which disease would you like to find relations for?",
-                choices=['Congestive Heart Failure', 'Type 2 Diabetes'],
+                choices=['Congestive Heart Failure', 'Diabetes', "Hypertension", "Obesity"],
             ),]
 answers = inquirer.prompt(questions)
-print(answers["size"])
+
+code_choices = {"Hypertension": ['4010', '4011', '4019'], "Congestive Heart Failure": ['4280'], "Diabetes": ["25000", "25001", "25002"], "Obesity": ["27800", "27801"]}
 
 demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", \
                 "results":["D_ICD_DIAGNOSES", "ICD9_CODE"],"from_index": 4, "print_index": 3},\
@@ -24,8 +25,9 @@ demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", \
 result_list = {"DIAGNOSES_ICD": ["Diagnoses",list()], \
                 "LABEVENTS": ["Lab Tests",list()], \
                 "PRESCRIPTIONS": ["Medications",list()]}
+print(("Okay, finding relations for {}").format(answers['size']))
 for item in demo_list:
-    grouping_base = nrc.no_ref_codes('4280')
+    grouping_base = nrc.no_ref_codes(code_choices[answers['size']])
     grouping_base.code_generation(item["from"], 20000, item['from_index'])
     patient_data = grouping_base.sparse_matrix_generation_by_patient()
     X, y = grouping_base.array_generation_for_ml_patient(item['to'], patient_data)
@@ -54,15 +56,18 @@ keys = list(result_list.keys())
 #         result_list[keys[1]][1][0][index][demo_list[1]["print_index"]],\
 #         result_list[keys[2]][1][0][index][demo_list[2]["print_index"]]))
 
-result_table = PrettyTable(result_list[keys[0]][0],\
+result_table = PrettyTable([result_list[keys[0]][0],\
                             result_list[keys[1]][0],\
-                            result_list[keys[2]][0])
+                            result_list[keys[2]][0]])
+try:
+    for index, item in enumerate(result_list[keys[0]][1][0]):
+        result_table.add_row([
+            result_list[keys[0]][1][0][index][demo_list[0]["print_index"]],\
+            result_list[keys[1]][1][0][index][demo_list[1]["print_index"]],\
+            result_list[keys[2]][1][0][index][demo_list[2]["print_index"]]])
+except IndexError as ex:
+    pass
+finally:
 
-for index, item in enumerate(result_list[keys[0]][1][0]):
-    result_table.add_row(
-        result_list[keys[0]][1][0][index][demo_list[0]["print_index"]],\
-        result_list[keys[1]][1][0][index][demo_list[1]["print_index"]],\
-        result_list[keys[2]][1][0][index][demo_list[2]["print_index"]])
-
-print(result_table)
+    print(result_table)
 
