@@ -1,20 +1,41 @@
 import no_ref_codes as nrc
 
-grouping_base = nrc.no_ref_codes('4280')
-grouping_base.code_generation(20000)
-patient_data = grouping_base.sparse_matrix_generation_by_patient()
-X, y = grouping_base.array_generation_for_ml_patient(patient_data)
-list_out = grouping_base.learning_by_diagnoses_lasso(X, y)
-ordered_list, ordered_dict = grouping_base.order_output_matrix(list_out)
+demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", \
+                "results":["D_ICD_DIAGNOSES", "ITEMID"],"from_index": 3, "print_index": 2},\
+             {"from": "LABEVENTS", "to":"DIAGNOSES_ICD", \
+             "results":["D_LABITEMS", "ITEMID"], "from_index": 3, "print_index": 2}, \
+             {"from": "PRESCRIPTIONS", "to":"DIAGNOSES_ICD", \
+             "results":["PRESCRIPTIONS", "ITEMID"], "from_index":7, "print_index": 8}]
 
-query_tuple = list()
-for item in ordered_list[0:15]:
-    query_tuple.append(ordered_dict[item])
-    
-query_tuple = tuple(query_tuple)
-query_string = ("SELECT * FROM mimiciii.D_LABITEMS WHERE ITEMID in {};").format(query_tuple)
-grouping_base.cur.execute(query_string)
-query_result = grouping_base.cur.fetchall()
+result_list = {"DIAGNOSES_ICD": ["Diagnoses",list()], \
+                "LABEVENTS": ["Lab Tests",list()], \
+                "PRESCRIPTIONS": ["Medications",list()]}
+for item in demo_list:
+    grouping_base = nrc.no_ref_codes('4280')
+    grouping_base.code_generation(item["from"], 20000, item['from_index'])
+    patient_data = grouping_base.sparse_matrix_generation_by_patient()
+    X, y = grouping_base.array_generation_for_ml_patient(item['to'], patient_data)
+    list_out = grouping_base.learning_by_target_lasso(X, y)
+    ordered_list, ordered_dict = grouping_base.order_output_matrix(list_out)
 
-for item in query_result:
-    print(item[2], item[5], item[4])
+    query_tuple = list()
+    for res in ordered_list[0:10]: 
+        query_tuple.append(ordered_dict[res])
+
+    query_string = ("SELECT * FROM mimiciii.{0} WHERE {1} in {2};"\
+                        ).format(item["results"][0], item["results"][1], tuple(query_tuple))
+    grouping_base.cur.execute(query_string)
+    query_result = grouping_base.cur.fetchall()
+    result_list[item['from']][1].append(query_result)
+
+keys = list(result_list.keys())
+print(("{0}\t|{1}\t|{2}").format(\
+    result_list[keys[0]][0],\
+    result_list[keys[1]][0],\
+    result_list[keys[2]][0]))
+
+for index, item in enumerate(result_list[keys[0]][1]):
+    print(("{0}\t|{1}\t|{2}").format(\
+        result_list[keys[0]][1][index][demo_list[0]["print_index"]],\
+        result_list[keys[1]][1][index][demo_list[1]["print_index"]],\
+        result_list[keys[2]][1][index][demo_list[2]["print_index"]]))
