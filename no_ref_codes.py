@@ -16,30 +16,30 @@ class no_ref_codes():
 
     
     # NOTE: Only used as we don't have static code dictionaries (LOINC, SNOMED, etc) loaded to @general right now
-    def code_generation(self, mapping_from, query_size, from_index):
+    def code_generation(self, mapping_from, query_size, from_index, db_features):
         patient_matrix = {}
         code_dict = {}
-        query_string = ("SELECT * from mimiciii.{} ORDER BY RANDOM() limit {};").format(mapping_from, query_size)
+        query_string = ("SELECT {0} from mimiciii.{1} ORDER BY RANDOM() limit {2};").format(db_features, mapping_from, query_size)
         self.cur.execute(query_string)
         rows = self.cur.fetchall()
         visit_matrix = {}
         for row in rows:
             # row[1] = patient_id, row[2] = visit_id, row[3] = itemid
-            if row[1] in visit_matrix:
-                patient_matrix[row[1]].append(row[from_index])
-                if row[2] in visit_matrix[row[1]]:
+            if row[0] in visit_matrix:
+                patient_matrix[row[0]].append(row[from_index])
+                if row[1] in visit_matrix[row[0]]:
                     if (row[from_index] in code_dict):
-                        visit_matrix[row[1]][row[2]].append(row[from_index])
+                        visit_matrix[row[0]][row[1]].append(row[from_index])
                     else:
                         if (row[from_index] not in self.target):
                             code_dict[row[from_index]] = row[from_index]
-                        visit_matrix[row[1]][row[2]].append([row[from_index]])
+                        visit_matrix[row[0]][row[1]].append([row[from_index]])
                 else:
-                    visit_matrix[row[1]][row[2]] = [row[from_index]]
+                    visit_matrix[row[0]][row[1]] = [row[from_index]]
             else:
-                patient_matrix[row[1]] = [row[from_index]]
-                visit_matrix[row[1]] = dict()
-                visit_matrix[row[1]][row[2]] = [row[from_index]]
+                patient_matrix[row[0]] = [row[from_index]]
+                visit_matrix[row[0]] = dict()
+                visit_matrix[row[0]][row[1]] = [row[from_index]]
         self.code_dict = code_dict
         self.patient_matrix = patient_matrix
         self.visit_matrix = visit_matrix
@@ -77,7 +77,7 @@ class no_ref_codes():
 
     # Creating the data structures needed for any regression/ML @ the visit resolution
     # NOTE: We use contiguious blocks of memory with NumPy, this is crucial for performance
-    def array_generation_for_ml_visit(self, mapping_to, visit_matrix):
+    def array_generation_for_ml_visit(self, mapping_to, visit_matrix, db_features):
         string_tuple = list()
         for x in visit_matrix.keys():
             try:
@@ -87,7 +87,7 @@ class no_ref_codes():
                 print(visit_matrix.keys())
                 print(x)
         string_tuple = tuple(string_tuple)
-        query_string = ("SELECT * from mimiciii.{} WHERE hadm_id in {}").format(mapping_to, string_tuple)
+        query_string = ("SELECT {0} from mimiciii.{1} WHERE hadm_id in {2}").format(db_features, mapping_to, string_tuple)
         self.cur.execute(query_string)
         target_rows = self.cur.fetchall()
         target_dict = {}
@@ -114,21 +114,21 @@ class no_ref_codes():
 
     # Creating the data structures needed for any regression/ML @ the patient resolution
     # NOTE: We use contiguious blocks of memory with NumPy, this is crucial for performance
-    def array_generation_for_ml_patient(self, mapping_to, patient_matrix):
+    def array_generation_for_ml_patient(self, mapping_to, patient_matrix, db_features):
         string_tuple = list()
         for x in patient_matrix.keys():
             string_tuple.append(int(x))
         string_tuple = tuple(string_tuple)
 
-        query_string = ("SELECT * from mimiciii.{} WHERE subject_id in {}").format(mapping_to, string_tuple)
+        query_string = ("SELECT {0} from mimiciii.{1} WHERE subject_id in {2}").format(db_features, mapping_to, string_tuple)
         self.cur.execute(query_string)
         target_rows = self.cur.fetchall()
         target_dict = {}
         for item in target_rows:
-            if item[1] in target_dict:
-                target_dict[item[1]].append(item[4])
+            if item[0] in target_dict:
+                target_dict[item[0]].append(item[1])
             else:
-                target_dict[item[1]] = [item[4]]
+                target_dict[item[0]] = [item[1]]
 
         X = np.zeros(shape=(len(target_dict.keys()), len(self.code_dict.keys())))
         y = np.zeros(shape=(len(target_dict.keys())))
@@ -146,7 +146,7 @@ class no_ref_codes():
 
 
     # Logisitic Regression using Lasso optimization and Lars algorithm
-    def learning_by_target_lasso(self, X, y):
+    def learning_by_target_lasso(self, X, y, alpha):
         alphas = np.logspace(-4, -1, 10)
         # regr = linear_model.LinearRegression()
         regr = linear_model.RidgeClassifier()
@@ -155,7 +155,7 @@ class no_ref_codes():
         # scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
         # best_alpha = alphas[scores.index(max(scores))]
         # regr.alpha = best_alpha
-        regr.alpha = 30
+        regr.alpha = alpha
         regr.fit(X, y)
         new_dict = dict()
         for index, code in enumerate(list(self.code_dict)):

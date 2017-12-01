@@ -15,12 +15,12 @@ answers = inquirer.prompt(questions)
 
 code_choices = {"Hypertension": ['4010', '4011', '4019'], "Congestive Heart Failure": ['4280'], "Diabetes": ["25000", "25001", "25002"], "Obesity": ["27800", "27801"]}
 
-demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", \
-                "results":["D_ICD_DIAGNOSES", "ICD9_CODE"],"from_index": 4, "print_index": 3},\
-             {"from": "LABEVENTS", "to":"DIAGNOSES_ICD", \
-             "results":["D_LABITEMS", "ITEMID"], "from_index": 3, "print_index": 2}, \
-             {"from": "PRESCRIPTIONS", "to":"DIAGNOSES_ICD", \
-             "results":["PRESCRIPTIONS", "DRUG"], "from_index":7, "print_index": 8}]
+demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", "db_from": "(hadm_id, subject_id, icd9_code)", \
+                "db_to": "(subject_id, icd9_code)", "results":["D_ICD_DIAGNOSES", "ICD9_CODE"],"from_index": 2, "print_index": 3},\
+             {"from": "LABEVENTS", "to":"DIAGNOSES_ICD", "db_from": "(hadm_id, subject_id, itemid)",\
+              "db_to": "(subject_id, icd9_code)", "results":["D_LABITEMS", "ITEMID"], "from_index": 3, "print_index": 2}, \
+             {"from": "PRESCRIPTIONS", "to":"DIAGNOSES_ICD", "db_from": "(hadm_id, subject_id, DRUG_NAME_POE)",\
+                "db_to": "(subject_id, icd9_code)", "results":["PRESCRIPTIONS", "DRUG"], "from_index":7, "print_index": 8}]
 
 result_list = {"DIAGNOSES_ICD": ["Diagnoses",list()], \
                 "LABEVENTS": ["Lab Tests",list()], \
@@ -28,10 +28,10 @@ result_list = {"DIAGNOSES_ICD": ["Diagnoses",list()], \
 print(("Okay, finding relations for {}").format(answers['size']))
 for item in demo_list:
     grouping_base = nrc.no_ref_codes(code_choices[answers['size']])
-    grouping_base.code_generation(item["from"], 15000, item['from_index'])
+    grouping_base.code_generation(item["from"], 15000, item['from_index'], item['db_features_from'])
     patient_data = grouping_base.sparse_matrix_generation_by_patient()
-    X, y = grouping_base.array_generation_for_ml_patient(item['to'], patient_data)
-    list_out = grouping_base.learning_by_target_lasso(X, y)
+    X, y = grouping_base.array_generation_for_ml_patient(item['to'], patient_data, item['db_features_to'])
+    list_out = grouping_base.learning_by_target_lasso(X, y, item['db_features'])
     ordered_list, ordered_dict = grouping_base.order_output_matrix(list_out)
 
     query_tuple = list()
@@ -39,8 +39,8 @@ for item in demo_list:
         print(res)
         query_tuple.append(str(res[0]))
     if item['from'] != "PRESCRIPTIONS":
-        query_string = ("SELECT * FROM mimiciii.{0} WHERE {1} in {2} LIMIT 10;"\
-                            ).format(item["results"][0], item["results"][1], tuple(query_tuple))
+        query_string = ("SELECT {3} FROM mimiciii.{0} WHERE {1} in {2} LIMIT 10;"\
+                        ).format(item["results"][0], item["results"][1], tuple(query_tuple), item["results"][1])
         grouping_base.cur.execute(query_string)
         query_result = grouping_base.cur.fetchall()
         result_list[item['from']][1] = query_result[::-1]
