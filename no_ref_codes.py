@@ -23,7 +23,6 @@ class no_ref_codes():
         self.cur.execute(query_string)
         rows = self.cur.fetchall()
         visit_matrix = {}
-        visit_count = 0
         for row in rows:
             # row[1] = patient_id, row[2] = visit_id, row[3] = itemid
             if row[1] in visit_matrix:
@@ -34,12 +33,13 @@ class no_ref_codes():
                     else:
                         if (row[from_index] not in self.target):
                             code_dict[row[from_index]] = row[from_index]
-                            visit_matrix[row[1]][row[2]].append([row[from_index]])
+                        visit_matrix[row[1]][row[2]].append([row[from_index]])
                 else:
                     visit_matrix[row[1]][row[2]] = [row[from_index]]
             else:
                 patient_matrix[row[1]] = [row[from_index]]
-                visit_matrix[row[1]] = {row[2]: [row[from_index]]}
+                visit_matrix[row[1]] = dict()
+                visit_matrix[row[1]][row[2]] = [row[from_index]]
         self.code_dict = code_dict
         self.patient_matrix = patient_matrix
         self.visit_matrix = visit_matrix
@@ -48,7 +48,6 @@ class no_ref_codes():
     # Generates a sparse attribute matrix based on HADM_ID's, higher resolution than patient, but might to "too much"
     def sparse_matrix_generation_by_visit(self):
         visit_sparse_matrix = dict()
-        visit_count = 0
 
         for patient_id in self.patient_matrix:
             for visit_id in self.visit_matrix[patient_id]:
@@ -80,8 +79,13 @@ class no_ref_codes():
     # NOTE: We use contiguious blocks of memory with NumPy, this is crucial for performance
     def array_generation_for_ml_visit(self, mapping_to, visit_matrix):
         string_tuple = list()
-        for x in visit_matrix:
-            string_tuple.append(int(x))
+        for x in visit_matrix.keys():
+            try:
+                string_tuple.append(int(x))
+            except TypeError as te:
+                print(te)
+                print(visit_matrix.keys())
+                print(x)
         string_tuple = tuple(string_tuple)
         query_string = ("SELECT * from mimiciii.{} WHERE hadm_id in {}").format(mapping_to, string_tuple)
         self.cur.execute(query_string)
@@ -144,12 +148,19 @@ class no_ref_codes():
     # Logisitic Regression using Lasso optimization and Lars algorithm
     def learning_by_target_lasso(self, X, y):
         alphas = np.logspace(-4, -1, 10)
-        regr = linear_model.LassoLars()
-        scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
-        best_alpha = alphas[scores.index(max(scores))]
-        regr.alpha = best_alpha
+        # regr = linear_model.LinearRegression()
+        regr = linear_model.RidgeClassifier()
+        # regr = linear_model.LassoLars()
+        # regr = linear_model.ElasticNetCV(cv=5)
+        # scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
+        # best_alpha = alphas[scores.index(max(scores))]
+        # regr.alpha = best_alpha
+        regr.alpha = 30
         regr.fit(X, y)
-        return regr.coef_
+        new_dict = dict()
+        for index, code in enumerate(list(self.code_dict)):
+            new_dict[code] = regr.coef_[0][index]
+        return new_dict
 
     # Logisitic Regression using Cross-validation for alphas, hence no fit->score iteration like in lasso
     # def learning_by_target_logisticCV(self, X, y):
@@ -165,8 +176,9 @@ class no_ref_codes():
     def order_output_matrix(self, _list):
         _dict = dict()
         count = 0
-        for item in self.code_dict.keys():
-            _dict[_list[count]] = item
-            count += 1
-        _list.sort()
-        return(_list[::-1], _dict)
+        return ((sorted(_list.items(), key=lambda x: x[1]))[::-1], _list)
+        #for item in self.code_dict.keys():
+        #    _dict[_list[count]] = item
+        #    count += 1
+        # _list.sort()
+        #return(_list, _dict)
