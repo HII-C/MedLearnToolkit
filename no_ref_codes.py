@@ -1,6 +1,6 @@
 import psycopg2
 import numpy as np
-from sklearn import linear_model,svm, tree
+from sklearn import linear_model,svm, tree, neural_network, ensemble
 from sklearn.linear_model import LogisticRegression
 
 
@@ -27,7 +27,7 @@ class no_ref_codes():
             if flag == False:
                 query_val = row[from_index]
             else:
-                query_val = tuple(row[from_index], row[from_index+1])
+                query_val = tuple([row[from_index], row[from_index+1]])
             # row[0] = patient_id, row[1] = visit_id, row[3+] = queries
             if row[0] in visit_matrix:
                 patient_matrix[row[0]].append(query_val)
@@ -131,9 +131,9 @@ class no_ref_codes():
         target_rows = self.cur.fetchall()
         for item in target_rows:
             if item[0] in target_dict:
-                target_dict[item[0]].append(item[1])
+                target_dict[item[0]].append(item[2])
             else:
-                target_dict[item[0]] = [item[1]]
+                target_dict[item[0]] = [item[2]]
 
         X = np.zeros(shape=(len(target_dict.keys()), len(self.code_dict.keys())))
         y = np.zeros(shape=(len(target_dict.keys())))
@@ -151,14 +151,16 @@ class no_ref_codes():
 
 
     # Logisitic Regression using Lasso optimization and Lars algorithm
-    def learning_by_target_lasso(self, X, y, alpha, l1=None):
-        alphas = np.logspace(-2, 3, 10)
+    def learning_by_target_lasso(self, X, y, alpha, input_c=None):
+        # alphas = np.logspace(-3, 0, 20)
         # regr = linear_model.LogisticRegression(n_jobs=-1, solver="sag")
-        # regr = linear_model.LogisticRegressionCV(Cs=alphas, n_jobs=-1, solver="saga")
-        if l1 == None:
-            regr = linear_model.SGDRegressor(loss='huber', l1_ratio=.05)
-        else:
-            regr = linear_model.SGDRegressor(l1_ratio=l1)
+        print("Staring")
+        regr = linear_model.LogisticRegression(C=input_c, n_jobs=-1, penalty="l2", solver="newton-cg")
+        #if l1 == None:
+           # regr = linear_model.SGDRegressor(loss='huber', l1_ratio=.05)
+        # else:
+            # regr = linear_model.SGDRegressor(l1_ratio=l1, penalty="elasticnet")
+            # regr = ensemble.GradientBoostingClassifier()
         # regr = tree.DecisionTreeClassifier()
         # scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
         # best_alpha = alphas[scores.index(max(scores))]
@@ -167,7 +169,7 @@ class no_ref_codes():
         regr.fit(X, y)
         new_dict = dict()
         for index, code in enumerate(list(self.code_dict)):
-            new_dict[code] = regr.coef_[index]
+            new_dict[code] = regr.coef_[0][index]
             #new_dict[code] = regr.feature_importances_[index]
         return new_dict
 
