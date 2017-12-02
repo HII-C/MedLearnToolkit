@@ -1,6 +1,6 @@
 import psycopg2
 import numpy as np
-from sklearn import linear_model,svm, tree, neural_network, ensemble
+from sklearn import linear_model,svm, tree, neural_network, ensemble, feature_selection
 from sklearn.linear_model import LogisticRegression
 
 
@@ -154,25 +154,14 @@ class no_ref_codes():
     # Logisitic Regression using Lasso optimization and Lars algorithm
     def learning_by_target_lasso(self, X, y, alpha, input_c=None):
         # alphas = np.logspace(-3, 0, 20)
-        # regr = linear_model.LogisticRegression(n_jobs=-1, solver="sag")
         print("Staring")
-        regr = linear_model.LogisticRegression(C=input_c, n_jobs=-1, penalty="l2", solver="newton-cg")
-        #if l1 == None:
-           # regr = linear_model.SGDRegressor(loss='huber', l1_ratio=.05)
-        # else:
-            # regr = linear_model.SGDRegressor(l1_ratio=l1, penalty="elasticnet")
-            # regr = ensemble.GradientBoostingClassifier()
-        # regr = tree.DecisionTreeClassifier()
-        # scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
-        # best_alpha = alphas[scores.index(max(scores))]
-        # regr.alpha = best_alpha
-        # regr.alpha = alpha
-        regr.fit(X, y)
+        regr = linear_model.LogisticRegression(penalty="l2", C=input_c, n_jobs=-1, solver="newton-cg")
+        rfe = feature_selection.RFE(regr, 25)
+        rfe.fit(X, y)
         new_dict = dict()
-        for index, code in enumerate(list(self.code_dict)):
-            new_dict[code] = regr.coef_[0][index]
-            #new_dict[code] = regr.feature_importances_[index]
-        return new_dict
+        # for index, code in enumerate(list(self.code_dict)):
+            # new_dict[code] = regr.coef_[0][index]
+        return rfe.ranking_[0:9]
 
     # Logisitic Regression using Cross-validation for alphas, hence no fit->score iteration like in lasso
     # def learning_by_target_logisticCV(self, X, y):

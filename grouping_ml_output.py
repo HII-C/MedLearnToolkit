@@ -32,15 +32,15 @@ for item in demo_list:
     patient_data = grouping_base.sparse_matrix_generation_by_patient()
     X, y = grouping_base.array_generation_for_ml_patient(item['to'], patient_data, item['db_to'])
     list_out = grouping_base.learning_by_target_lasso(X, y, item['c'], item['l1'])
-    ordered_list, ordered_dict = grouping_base.order_output_matrix(list_out)
+    # ordered_list, ordered_dict = grouping_base.order_output_matrix(list_out)
 
     query_tuple = list()
     if item['from'] != "LABEVENTS":
-        for res in ordered_list[0:10]:
+        for res in list_out[0:10]:
             print(res)
             query_tuple.append(str(res[0]))
     else:
-        for res in ordered_list[0:10]:
+        for res in list_out[0:10]:
             print(res)
             query_tuple.append(str(res[0][0]))
     if item['from'] == "DIAGNOSES_ICD":
