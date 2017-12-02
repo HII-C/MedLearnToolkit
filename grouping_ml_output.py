@@ -15,11 +15,11 @@ answers = inquirer.prompt(questions)
 
 code_choices = {"Hypertension": ['4010', '4011', '4019'], "Congestive Heart Failure": ['4280'], "Diabetes": ["25000", "25001", "25002"], "Obesity": ["27800", "27801"]}
 
-demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", "db_from": "subject_id, hadm_id, icd9_code", "alpha": .001, "l1":.2,\
+demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", "db_from": "subject_id, hadm_id, icd9_code", "alpha": .001, "l1":.2, "flag":False,\
                 "db_to": "subject_id, hadm_id, icd9_code", "results":["D_ICD_DIAGNOSES", "ICD9_CODE", "LONG_TITLE"],"from_index": 2, "print_index": 0},\
-                {"from": "LABEVENTS", "to":"DIAGNOSES_ICD", "db_from": "subject_id, hadm_id, itemid", "alpha": .8, "l1":.1,\
+                {"from": "LABEVENTS", "to":"DIAGNOSES_ICD", "db_from": "subject_id, hadm_id, itemid", "alpha": .8, "l1":.1,"flag":True,\
               "db_to": "subject_id, hadm_id, icd9_code", "results":["D_LABITEMS", "ITEMID", "LABEL"], "from_index": 2, "print_index": 0}, \
-              {"from": "PRESCRIPTIONS", "to":"DIAGNOSES_ICD", "db_from": "subject_id, hadm_id, DRUG", "alpha": 10,"l1":.06,\
+              {"from": "PRESCRIPTIONS", "to":"DIAGNOSES_ICD", "db_from": "subject_id, hadm_id, DRUG", "alpha": 10,"l1":.06,"flag":False,\
                 "db_to": "subject_id, hadm_id, icd9_code", "results":["PRESCRIPTIONS", "DRUG"], "from_index":2, "print_index": 0}]
 
 result_list = {"DIAGNOSES_ICD": ["Diagnoses",list()], \
@@ -28,7 +28,7 @@ result_list = {"DIAGNOSES_ICD": ["Diagnoses",list()], \
 print(("Okay, finding relations for {}").format(answers['size']))
 for item in demo_list:
     grouping_base = nrc.no_ref_codes(code_choices[answers['size']])
-    grouping_base.code_generation(item["from"], 27000, item['from_index'], item['db_from'])
+    grouping_base.code_generation(item["from"], 27000, item['from_index'], item['db_from'], item['flag'])
     patient_data = grouping_base.sparse_matrix_generation_by_visit()
     X, y = grouping_base.array_generation_for_ml_visit(item['to'], patient_data, item['db_to'])
     list_out = grouping_base.learning_by_target_lasso(X, y, item['alpha'], item['l1'])

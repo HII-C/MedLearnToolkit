@@ -16,7 +16,7 @@ class no_ref_codes():
 
     
     # NOTE: Only used as we don't have static code dictionaries (LOINC, SNOMED, etc) loaded to @general right now
-    def code_generation(self, mapping_from, query_size, from_index, db_features):
+    def code_generation(self, mapping_from, query_size, from_index, db_features, flag):
         patient_matrix = {}
         code_dict = {}
         query_string = ("SELECT {0} from mimiciii.{1} ORDER BY RANDOM() limit {2};").format(db_features, mapping_from, query_size)
@@ -24,22 +24,26 @@ class no_ref_codes():
         rows = self.cur.fetchall()
         visit_matrix = {}
         for row in rows:
-            # row[1] = patient_id, row[2] = visit_id, row[3] = itemid
-            if row[0] in visit_matrix:
-                patient_matrix[row[0]].append(row[from_index])
-                if row[1] in visit_matrix[row[0]]:
-                    if (row[from_index] in code_dict):
-                        visit_matrix[row[0]][row[1]].append(row[from_index])
-                    else:
-                        if (row[from_index] not in self.target):
-                            code_dict[row[from_index]] = row[from_index]
-                        visit_matrix[row[0]][row[1]].append([row[from_index]])
-                else:
-                    visit_matrix[row[0]][row[1]] = [row[from_index]]
+            if flag == False:
+                query_val = row[from_index]
             else:
-                patient_matrix[row[0]] = [row[from_index]]
+                query_val = tuple(row[from_index], row[from_index+1])
+            # row[0] = patient_id, row[1] = visit_id, row[3+] = queries
+            if row[0] in visit_matrix:
+                patient_matrix[row[0]].append(query_val)
+                if row[1] in visit_matrix[row[0]]:
+                    if (query_val in code_dict):
+                        visit_matrix[row[0]][row[1]].append(query_val)
+                    else:
+                        if (query_val not in self.target):
+                            code_dict[query_val] = query_val
+                        visit_matrix[row[0]][row[1]].append([query_val])
+                else:
+                    visit_matrix[row[0]][row[1]] = [query_val]
+            else:
+                patient_matrix[row[0]] = [query_val]
                 visit_matrix[row[0]] = dict()
-                visit_matrix[row[0]][row[1]] = [row[from_index]]
+                visit_matrix[row[0]][row[1]] = [query_val]
         self.code_dict = code_dict
         self.patient_matrix = patient_matrix
         self.visit_matrix = visit_matrix
