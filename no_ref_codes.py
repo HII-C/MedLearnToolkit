@@ -1,6 +1,6 @@
 import psycopg2
 import numpy as np
-from sklearn import linear_model
+from sklearn import linear_model,svm, tree
 from sklearn.linear_model import LogisticRegression
 
 
@@ -65,6 +65,7 @@ class no_ref_codes():
     # We should explore creating a standard measure of success once we start training in earnest
     def sparse_matrix_generation_by_patient(self):
         patient_sparse_matrix = dict()
+        # print(self.patient_matrix)
         for patient_id in self.patient_matrix:
             patient_sparse_matrix[patient_id] = []
             for code in self.code_dict:
@@ -81,7 +82,8 @@ class no_ref_codes():
         string_tuple = list()
         for x in visit_matrix.keys():
             try:
-                string_tuple.append(int(x))
+                if x != None:
+                    string_tuple.append(str(x))
             except TypeError as te:
                 print(te)
                 print(visit_matrix.keys())
@@ -92,10 +94,10 @@ class no_ref_codes():
         target_rows = self.cur.fetchall()
         target_dict = {}
         for item in target_rows:
-            if item[2] in target_dict:
-                target_dict[item[2]].append(item[4])
+            if item[1] in target_dict:
+                target_dict[item[1]].append(item[2])
             else:
-                target_dict[item[2]] = [item[4]]
+                target_dict[item[1]] = [item[2]]
 
         X = np.zeros(shape=(len(target_dict.keys()), len(self.code_dict.keys())))
         y = np.zeros(shape=(len(target_dict.keys())))
@@ -119,11 +121,10 @@ class no_ref_codes():
         for x in patient_matrix.keys():
             string_tuple.append(int(x))
         string_tuple = tuple(string_tuple)
-
         query_string = ("SELECT {0} from mimiciii.{1} WHERE subject_id in {2}").format(db_features, mapping_to, string_tuple)
         self.cur.execute(query_string)
-        target_rows = self.cur.fetchall()
         target_dict = {}
+        target_rows = self.cur.fetchall()
         for item in target_rows:
             if item[0] in target_dict:
                 target_dict[item[0]].append(item[1])
@@ -146,20 +147,24 @@ class no_ref_codes():
 
 
     # Logisitic Regression using Lasso optimization and Lars algorithm
-    def learning_by_target_lasso(self, X, y, alpha):
-        alphas = np.logspace(-4, -1, 10)
-        # regr = linear_model.LinearRegression()
-        regr = linear_model.RidgeClassifier()
-        # regr = linear_model.LassoLars()
-        # regr = linear_model.ElasticNetCV(cv=5)
+    def learning_by_target_lasso(self, X, y, alpha, l1=None):
+        alphas = np.logspace(-2, 3, 10)
+        # regr = linear_model.LogisticRegression(n_jobs=-1, solver="sag")
+        # regr = linear_model.LogisticRegressionCV(Cs=alphas, n_jobs=-1, solver="saga")
+        if l1 == None:
+            regr = linear_model.SGDRegressor(loss='huber', l1_ratio=.05)
+        else:
+            regr = linear_model.SGDRegressor(l1_ratio=l1)
+        # regr = tree.DecisionTreeClassifier()
         # scores = [regr.set_params(alpha=alpha).fit(X, y).score(X, y) for alpha in alphas]    
         # best_alpha = alphas[scores.index(max(scores))]
         # regr.alpha = best_alpha
-        regr.alpha = alpha
+        # regr.alpha = alpha
         regr.fit(X, y)
         new_dict = dict()
         for index, code in enumerate(list(self.code_dict)):
-            new_dict[code] = regr.coef_[0][index]
+            new_dict[code] = regr.coef_[index]
+            #new_dict[code] = regr.feature_importances_[index]
         return new_dict
 
     # Logisitic Regression using Cross-validation for alphas, hence no fit->score iteration like in lasso
