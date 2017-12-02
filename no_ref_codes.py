@@ -1,8 +1,8 @@
-import psycopg2
 import numpy as np
-from sklearn import linear_model,svm, tree, neural_network, ensemble, feature_selection
+import psycopg2
+from sklearn import (ensemble, feature_selection, linear_model, neural_network,
+                     svm, tree)
 from sklearn.linear_model import LogisticRegression
-
 
 # NOTE: Look at potientally implementing GridSearchCV in the future
 # from sklearn.model_selection import GridSearchCV
@@ -154,14 +154,15 @@ class no_ref_codes():
     # Logisitic Regression using Lasso optimization and Lars algorithm
     def learning_by_target_lasso(self, X, y, alpha, input_c=None):
         # alphas = np.logspace(-3, 0, 20)
-        print("Staring")
+        print(("Finding the most important half of {} features").format(len(X[0])))
         regr = linear_model.LogisticRegression(penalty="l2", C=input_c, n_jobs=-1, solver="newton-cg")
-        rfe = feature_selection.RFE(regr, 25)
+        rfe = feature_selection.RFE(regr)
         rfe.fit(X, y)
         new_dict = dict()
-        # for index, code in enumerate(list(self.code_dict)):
+        for index, code in enumerate(list(self.code_dict)):
             # new_dict[code] = regr.coef_[0][index]
-        return rfe.ranking_[0:9]
+            new_dict[code] = rfe.ranking_[index]
+        return new_dict
 
     # Logisitic Regression using Cross-validation for alphas, hence no fit->score iteration like in lasso
     # def learning_by_target_logisticCV(self, X, y):
