@@ -13,7 +13,7 @@ questions = [
             ),]
 answers = inquirer.prompt(questions)
 
-code_choices = {"Hypertension": ['4010', '4011', '4019'], "Congestive Heart Failure": ['4280'], "Diabetes": ["25000", "25001", "25002"], "Obesity": ["27800", "27801"]}
+code_choices = {"Hypertension": ['4010', '4011', '4019'], "Congestive Heart Failure": ['4280', "42832", "42823", "42822", "42833"], "Diabetes": ["25000", "25001", "25002"], "Obesity": ["27800", "27801"]}
 
 demo_list = [{"from": "DIAGNOSES_ICD", "to":"DIAGNOSES_ICD", "db_from": "subject_id, hadm_id, icd9_code", "c": .483293023857, "l1":.2, "flag":False,\
                 "db_to": "subject_id, hadm_id, icd9_code", "results":["D_ICD_DIAGNOSES", "ICD9_CODE", "LONG_TITLE"],"from_index": 2, "print_index": 0},\

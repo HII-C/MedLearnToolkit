@@ -112,8 +112,9 @@ class no_ref_codes():
             for tar in self.target:
                 if (tar in target_dict[item]):
                     y[count_y] = 1
-                elif y[count_y] != 1:
+                else:
                     y[count_y] = 0
+                    break
             count_y += 1
         return X, y
 
