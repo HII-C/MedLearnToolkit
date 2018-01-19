@@ -1,5 +1,6 @@
 import numpy as np
 import psycopg2
+import pymysql
 from sklearn import (ensemble, feature_selection, linear_model, neural_network,
                      svm, tree)
 from sklearn.linear_model import LogisticRegression
@@ -8,7 +9,7 @@ from sklearn.linear_model import LogisticRegression
 # from sklearn.model_selection import GridSearchCV
 
 class no_umls_codes():
-    conn = psycopg2.connect(("dbname='mimic' user='postgres' host='db01.healthcreek.org' password='Super p0n13s'"))
+    conn = pymysql.connect(user='root', host='db01.healthcreek.org',db='mimic',password='HealthCreekMySQLr00t')
     cur = conn.cursor()
 
     def __init__(self, target):
@@ -19,7 +20,7 @@ class no_umls_codes():
     def code_generation(self, mapping_from, query_size, from_index, db_features, flag):
         patient_matrix = {}
         code_dict = {}
-        query_string = ("SELECT {0} from mimiciii.{1} ORDER BY RANDOM() limit {2};").format(db_features, mapping_from, query_size)
+        query_string = ("SELECT {0} from {1} ORDER BY RAND() limit {2};").format(db_features, mapping_from, query_size)
         self.cur.execute(query_string)
         rows = self.cur.fetchall()
         visit_matrix = {}
@@ -93,7 +94,7 @@ class no_umls_codes():
                 print(visit_matrix.keys())
                 print(x)
         string_tuple = tuple(string_tuple)
-        query_string = ("SELECT {0} from mimiciii.{1} WHERE hadm_id in {2}").format(db_features, mapping_to, string_tuple)
+        query_string = ("SELECT {0} from {1} WHERE hadm_id in {2}").format(db_features, mapping_to, string_tuple)
         self.cur.execute(query_string)
         target_rows = self.cur.fetchall()
         target_dict = {}
@@ -126,7 +127,7 @@ class no_umls_codes():
         for x in patient_matrix.keys():
             string_tuple.append(int(x))
         string_tuple = tuple(string_tuple)
-        query_string = ("SELECT {0} from mimiciii.{1} WHERE subject_id in {2}").format(db_features, mapping_to, string_tuple)
+        query_string = ("SELECT {0} from {1} WHERE subject_id in {2}").format(db_features, mapping_to, string_tuple)
         self.cur.execute(query_string)
         target_dict = {}
         target_rows = self.cur.fetchall()
