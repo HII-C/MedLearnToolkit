@@ -19,7 +19,7 @@ class convert_to_cui(object):
             # iid, loinc_code, cui
             exec_str = ("CREATE TABLE {}.itemid_to_cui (iid MEDIUMINT UNSIGNED NOT NULL, cui char(8) UNIQUE, loinc_code char(7) UNIQUE, PRIMARY KEY(iid)) ENGINE = MYISAM;").format(name_)
             self.cursor.execute(exec_str)
-        
+
 
 
     def mimic_cui_obs_table_init(self, db_name):
@@ -29,10 +29,10 @@ class convert_to_cui(object):
             # hadm_id, cui, value, valuenom, valueuom, flag
             table_creation_str = ('CREATE TABLE {}.mimic_cui_obs (hadm_id MEDIUM UNSIGNED NOT NULL, cui char(8), value VARCHAR(200), valuenum double precision, valueuom VARCHAR(20), flag VARCHAR(20), key(hadm_id), key(cui));').format(db_name)
             self.cursor.execute(table_creation_str)
-    
+
     def iid_to_loinc(self, mimic_db_name_):
         query_str = ('SELECT DISTINCT ITEMID, loinc_code FROM {}.D_LABITEMS;').format(mimic_db_name_)
-        iid_lionc_array = [list(), list()]
+        iid_lionc_array = [[], []]
         for item in (self.mimic_conn.execute(query_str).fetchall()):
             iid_lionc_array[0].append[int(item[0])]
             iid_lionc_array[1].append[str(item[1])]

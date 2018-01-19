@@ -14,7 +14,7 @@ def patientToVector(diagnoses):
     cur = conn.cursor()
     cur.execute("SELECT * from mimiciii.PROCEDURES_ICD limit 10000;")
     rows = cur.fetchall()
-    
+
     visit_count = 0
     patient_code = dict()
     for row in rows:
@@ -35,7 +35,7 @@ def patientToVector(diagnoses):
                 patient_code[patient_id].append(1)
             else:
                 patient_code[patient_id].append(0)
-                
+
     string_tuple = list()
     for x in patient_code.keys():
         string_tuple.append(int(x))
@@ -56,7 +56,7 @@ def patientToVector(diagnoses):
 
     count_y = 0
     imp_index = 0
-    
+
     for item in patient_code.keys():
         X[count_y] = np.array(patient_code[item])
         if (diagnoses in diagnoses_dict[item]):
@@ -65,7 +65,7 @@ def patientToVector(diagnoses):
             y[count_y] = 0
 
         count_y += 1
-    
+
     regr = linear_model.LogisticRegressionCV()
     regr.fit(X, y)
     print(regr.coef_)
@@ -75,7 +75,7 @@ def patientToVector(diagnoses):
     # query_string = ("SELECT * from mimiciii.DIAGNOSES_ICD WHERE icd9_code = \'{}\' limit 10000;").format(diagnoses)
     # cur.execute(query_string)
     # prediction_rows = cur.fetchall()
-    
+
     # for row in prediction_rows:
     #     if (row[1] not in patient_code.keys()):
     #         cur.execute(("SELECT * from mimiciii.PROCEDURES_ICD WHERE subject_id = \'{}\';").format(row[1]))

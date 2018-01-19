@@ -7,14 +7,14 @@ from sklearn.linear_model import LogisticRegression
 # NOTE: Look at potientally implementing GridSearchCV in the future
 # from sklearn.model_selection import GridSearchCV
 
-class no_ref_codes():
+class no_umls_codes():
     conn = psycopg2.connect(("dbname='mimic' user='postgres' host='db01.healthcreek.org' password='Super p0n13s'"))
     cur = conn.cursor()
 
     def __init__(self, target):
         self.target = target
 
-    
+
     # NOTE: Only used as we don't have static code dictionaries (LOINC, SNOMED, etc) loaded to @general right now
     def code_generation(self, mapping_from, query_size, from_index, db_features, flag):
         patient_matrix = {}
@@ -136,22 +136,37 @@ class no_ref_codes():
             else:
                 target_dict[item[0]] = [item[2]]
 
-        X = np.zeros(shape=(len(target_dict.keys()), len(self.code_dict.keys())))
-        y = np.zeros(shape=(len(target_dict.keys())))
+        # X = np.zeros(shape=(len(target_dict.keys()), len(self.code_dict.keys())))
+        # y = np.zeros(shape=(len(target_dict.keys())))
+        X = [[0]*len(self.code_dict.keys())]*len(target_dict.keys())
+        y = [0]*len(target_dict.keys())
 
-        count_y = 0
-        for item in target_dict.keys():
-            X[count_y] = np.array(patient_matrix[item])
+        for index, item in enumerate(target_dict.keys()):
+            X[index] = patient_matrix[item]
             for tar in self.target:
                 if (tar in target_dict[item]):
-                    y[count_y] = 1
-                elif y[count_y] != 1:
-                    y[count_y] = 0
-            count_y += 1 
+                    y[index] = 1
+                elif y[index] != 1:
+                    y[index] = 0
         return X, y
 
+    def minimize_ml_attributes(self, X):
+        for index, value in X[0]:
+            remove_flag = True
+            for i in range(0, len(X)):
+                if X[i][index] == 1:
+                    remove_flag = False
+            if remove_flag == True:
+                for i in range(0, len(X)):
+                    del X[i][index]
+        for i in range(0, len(X)):
+            X[i] = tuple(X[i])
+        X = np.asarray(X)
+        return X
 
     # Logisitic Regression using Lasso optimization and Lars algorithm
+    # New, important topics: One-hot encoding
+    # http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
     def learning_by_target_lasso(self, X, y, alpha, input_c=None):
         # alphas = np.logspace(-3, 0, 20)
         print(("Finding the most important half of {} features").format(len(X[0])))

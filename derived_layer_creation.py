@@ -21,7 +21,7 @@ class derived_layer_creation(object):
                     print("Database successfuly removed/created")
                 except Exception as ex:
                     print("Unable to drop with exception:", ex)
-            else:
+            elif user_check == "n":
                 try:
                     self.cursor.execute(("CREATE DATABASE {};").format(name_))
                     print(("Database {} created").format(name_))
@@ -31,6 +31,9 @@ class derived_layer_creation(object):
                     resp = input()
                     if (resp == "y"):
                         exit()
+            else:
+                print("Invalid response, exiting now")
+                exit()
 
     def create_term_table(self, derived_db_name, umls_db):
         try:
