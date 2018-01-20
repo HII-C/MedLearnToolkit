@@ -1,15 +1,17 @@
 from ml_methods import ml_methods
 from no_ref_codes import no_umls_codes
+import heapq
+import numpy as np
 
 diabetes_ml_props = {\
             "from": "DIAGNOSES_ICD",\
-            "to":"DIAGNOSES_ICD", \
+            "to":"LABEVENTS", \
             "db_from": "subject_id, hadm_id, icd9_code",\
             "c": .483293023857,\
             "l1":.2,\
             "flag":False,\
-            "db_to": "subject_id, hadm_id, icd9_code",\
-            "results":["D_ICD_DIAGNOSES", "ICD9_CODE", "LONG_TITLE"],\
+            "db_to": "subject_id, hadm_id, ITEMID",\
+            "results":["D_LABITEMS", "ITEMID", "LABEL"],\
             "from_index": 2,\
             "print_index": 0\
             }
@@ -28,12 +30,17 @@ X, y = testing_ml.array_generation_for_ml_patient(diabetes_ml_props['to'],\
                                                      diabetes_ml_props['db_to'])
 
 classifier = ml_methods()
-ordered_list = classifier.MLP(X, y)
-
+ordered_list = classifier.SGD(X, y)
 query_tuple = list()
-for res in ordered_list[0:10]:
-    # print(res)
-    query_tuple.append(str(res[0]))
+stat_tuple = list()
+# query_tuple = heapq.nlargest(10, ordered_list)
+indices = np.argsort(ordered_list)[::-1]
+for i in range(0, 10):
+    stat_tuple.append(ordered_list[indices[i]])
+    query_tuple.append(list(testing_ml.code_dict.keys())[indices[i]])
+print(query_tuple)
+print(stat_tuple)
+query_tuple = tuple(map(lambda x: str(x), query_tuple))
 
 query_string = ("SELECT {3} FROM {0} WHERE {1} in {2} LIMIT 10;").format\
                 (diabetes_ml_props["results"][0],\
