@@ -1,6 +1,7 @@
 import numpy as np
 import psycopg2
 import pymysql
+from collections import defaultdict
 from sklearn import (ensemble, feature_selection, linear_model, neural_network,
                      svm, tree)
 from sklearn.linear_model import LogisticRegression
@@ -123,15 +124,14 @@ class no_umls_codes():
     # Creating the data structures needed for any regression/ML @ the patient resolution
     # NOTE: We use contiguious blocks of memory with NumPy, this is crucial for performance
     def array_generation_for_ml_patient(self, mapping_to, patient_matrix, db_features):
-        string_tuple = list()
-        for x in patient_matrix.keys():
-            string_tuple.append(int(x))
-        string_tuple = tuple(string_tuple)
+        string_tuple = tuple([str(x) for x in list(patient_matrix.keys())])
         query_string = ("SELECT {0} from {1} WHERE subject_id in {2}").format(db_features, mapping_to, string_tuple)
         self.cur.execute(query_string)
-        target_dict = {}
+        target_dict = dict()
         target_rows = self.cur.fetchall()
+        # map(lambda x: target_dict[x[0]].append(x[2]), target_rows)
         for item in target_rows:
+            # target_dict[item[0]].append(item[2])
             if item[0] in target_dict:
                 target_dict[item[0]].append(item[2])
             else:
