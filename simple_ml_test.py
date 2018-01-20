@@ -30,7 +30,7 @@ X, y = testing_ml.array_generation_for_ml_patient(diabetes_ml_props['to'],\
                                                      diabetes_ml_props['db_to'])
 
 classifier = ml_methods()
-ordered_list = classifier.SGD(X, y)
+ordered_list = classifier.LassoLars(X, y)
 query_tuple = list()
 stat_tuple = list()
 # query_tuple = heapq.nlargest(10, ordered_list)

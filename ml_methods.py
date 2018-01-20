@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import SGDClassifier, LassoLars
 
 class ml_methods(object):
 
@@ -23,3 +23,8 @@ class ml_methods(object):
         classify = SGDClassifier()
         classify.fit(X, y)
         return(classify.coef_[0])
+
+    def LassoLars(self, X, y):
+        classify = LassoLars()
+        classify.fit(X, y)
+        return(classify.coef_)
