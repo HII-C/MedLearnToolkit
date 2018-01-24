@@ -3,8 +3,12 @@ import pandas as pd
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import GradientBoostingClassifier
+<<<<<<< HEAD
 from sklearn.linear_model import SGDClassifier, LassoLars
 import xgboost as xgb
+=======
+from sklearn.linear_model import SGDClassifier, LassoLars, LinearRegression
+>>>>>>> 7a72d598ce9718581b9831e201f5b25b6f1b541d
 
 class ml_methods(object):
 
@@ -36,3 +40,8 @@ class ml_methods(object):
         real_y = xgb.DMatrix(y)
         param = {'max_depth': 2, 'eta': 1, 'silent': 1, 'objective': 'binary:logistic'}
         bst = xgb.train(param, real_X)
+
+    def Linear(self, X, y):
+        classify = LinearRegression()
+        classify.fit(X, y)
+        return(classify.coef_)
