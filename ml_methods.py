@@ -1,8 +1,10 @@
 import numpy as np
+import pandas as pd
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import SGDClassifier, LassoLars
+import xgboost as xgb
 
 class ml_methods(object):
 
@@ -28,3 +30,9 @@ class ml_methods(object):
         classify = LassoLars()
         classify.fit(X, y)
         return(classify.coef_)
+
+    def GradientBoost(self, X, y, param, num_round):
+        real_X = xgb.DMatrix(npymat, X)
+        real_y = xgb.DMatrix(y)
+        param = {'max_depth': 2, 'eta': 1, 'silent': 1, 'objective': 'binary:logistic'}
+        bst = xgb.train(param, real_X)

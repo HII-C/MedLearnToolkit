@@ -137,10 +137,10 @@ class no_umls_codes():
             else:
                 target_dict[item[0]] = [item[2]]
 
-        # X = np.zeros(shape=(len(target_dict.keys()), len(self.code_dict.keys())))
-        # y = np.zeros(shape=(len(target_dict.keys())))
-        X = [[0]*len(self.code_dict.keys())]*len(target_dict.keys())
-        y = [0]*len(target_dict.keys())
+        X = np.zeros(shape=(len(target_dict.keys()), len(self.code_dict.keys())))
+        y = np.zeros(shape=(len(target_dict.keys())))
+        # X = [[0]*len(self.code_dict.keys())]*len(target_dict.keys())
+        # y = [0]*len(target_dict.keys())
 
         for index, item in enumerate(target_dict.keys()):
             X[index] = patient_matrix[item]
