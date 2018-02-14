@@ -75,9 +75,9 @@ def explosive_code_generation(self, mapping_from, query_size, from_index, db_fea
                 visit_matrix[row[0]] = dict() #initializes a 2d matrix
                 visit_matrix[row[0]][row[1]]= [query_val] #sets the value query_val with the new key patient id and then visit id
         #sets the dictionaries to the global scale
-        self.code_dict = code_dict
-        self.patient_matrix = patient_matrix            
-        self.visit_matrix = visit_matrix
+    self.code_dict = code_dict
+    self.patient_matrix = patient_matrix            
+    self.visit_matrix = visit_matrix
 
 
 
