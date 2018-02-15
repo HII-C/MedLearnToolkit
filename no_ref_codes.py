@@ -1,6 +1,7 @@
 import numpy as np
 import psycopg2
 import pymysql
+from getpass import getpass
 from collections import defaultdict
 from sklearn import (ensemble, feature_selection, linear_model, neural_network,
                      svm, tree)
@@ -10,7 +11,11 @@ from sklearn.linear_model import LogisticRegression
 # from sklearn.model_selection import GridSearchCV
 
 class no_umls_codes():
-    conn = pymysql.connect(user='root', host='db01.healthcreek.org',db='mimic',password='HealthCreekMySQLr00t')
+    user_ = input("What is the MySQL user?\n")
+    host_ = input("\nWhat is the MySQL host name/location?\n")
+    db_ = input("\nWhat is the MySQL Database name?\n")
+    password_ = getpass()
+    conn = pymysql.connect(user=user_, host=host_ ,db=db_,password=password_)
     cur = conn.cursor()
 
     def __init__(self, target):
@@ -50,34 +55,34 @@ class no_umls_codes():
         self.patient_matrix = patient_matrix
         self.visit_matrix = visit_matrix
 
-def explosive_code_generation(self, mapping_from, query_size, from_index, db_features):
-    patient_matrix = {} #This is a matrix sorted by patients
-    visit_matrix = {} #This is a matrix sorted by vists (HADM_ID)
-    code_dict = {} #This is the dictionary of certain values, I want it to be populated with values (ex: HADMID: <Value>)
-    query_string = ("SELECT {0} from {1} ORDER BY RAND() limit {2};").format(db_features, mapping_from, query_size) #This is the string to prompt the mysql to retrieve certain data
-    self.cur.execute(query_string) #executes the string above on to command lin
-    rows = self.cur.fetchall() #fetches all the vlaues from the executed query_string statement
-    for row in rows: #iterates the row (is the row the whole table?)
-        query_val = tuple([row[0], row[1], row[2]]) #(subject_id, hadm_id, item_id)
-        if row[0] in visit_matrix: #check if the subject_id which is the patient id is already in the visit matrix or not
-            patient_matrix[row[0]].append(query_val) #if so, it adds the the patient id to the patient matrix at key of subject_id
-            if row[1] in visit_matrix[row[0]]: #check if the hadm_id which is visit id is present in the visit_matrix at the subject_id key (if the hadm_id is at the patient key)
-                if (query_val in code_dict): #checks if the query_val in code_di
-                    visit_matrix[row[0]][row[1]].append(query_val) #appends the query val to the visit matrix at patient
-                else:
-                    if (query_val not in self.target):
-                        code_dict[query_val] = query_val #adds the value query_val to the code dictionary with the query_val key
-                        visit_matrix[row[0]][row[1]].row(query_val) #appends the query_val to the visit matrix at patient at visit
+    def explosive_code_generation(self, mapping_from, query_size, from_index, db_features):
+        patient_matrix = {} #This is a matrix sorted by patients
+        visit_matrix = {} #This is a matrix sorted by vists (HADM_ID)
+        code_dict = {} #This is the dictionary of certain values, I want it to be populated with values (ex: HADMID: <Value>)
+        query_string = ("SELECT {0} from {1} ORDER BY RAND() limit {2};").format(db_features, mapping_from, query_size) #This is the string to prompt the mysql to retrieve certain data
+        self.cur.execute(query_string) #executes the string above on to command lin
+        rows = self.cur.fetchall() #fetches all the vlaues from the executed query_string statement
+        for row in rows: #iterates the row (is the row the whole table?)
+            query_val = tuple([row[0], row[1], row[2]]) #(subject_id, hadm_id, item_id)
+            if row[0] in visit_matrix: #check if the subject_id which is the patient id is already in the visit matrix or not
+                patient_matrix[row[0]].append(query_val) #if so, it adds the the patient id to the patient matrix at key of subject_id
+                if row[1] in visit_matrix[row[0]]: #check if the hadm_id which is visit id is present in the visit_matrix at the subject_id key (if the hadm_id is at the patient key)
+                    if (query_val in code_dict): #checks if the query_val in code_di
+                        visit_matrix[row[0]][row[1]].append(query_val) #appends the query val to the visit matrix at patient
                     else:
-                        visit_matrix[row[0]][row[1]] = [query_val] #adds the value query_val to the code visit_matrix dictionary with the patient and then visit id       
-            else:
-                patient_matrix[row[0]] = [query_val] #sets the value query_val with the new key patient id
-                visit_matrix[row[0]] = dict() #initializes a 2d matrix
-                visit_matrix[row[0]][row[1]]= [query_val] #sets the value query_val with the new key patient id and then visit id
-        #sets the dictionaries to the global scale
-    self.code_dict = code_dict
-    self.patient_matrix = patient_matrix            
-    self.visit_matrix = visit_matrix
+                        if (query_val not in self.target):
+                            code_dict[query_val] = query_val #adds the value query_val to the code dictionary with the query_val key
+                            visit_matrix[row[0]][row[1]].row(query_val) #appends the query_val to the visit matrix at patient at visit
+                        else:
+                            visit_matrix[row[0]][row[1]] = [query_val] #adds the value query_val to the code visit_matrix dictionary with the patient and then visit id       
+                else:
+                    patient_matrix[row[0]] = [query_val] #sets the value query_val with the new key patient id
+                    visit_matrix[row[0]] = dict() #initializes a 2d matrix
+                    visit_matrix[row[0]][row[1]]= [query_val] #sets the value query_val with the new key patient id and then visit id
+            #sets the dictionaries to the global scale
+        self.code_dict = code_dict
+        self.patient_matrix = patient_matrix            
+        self.visit_matrix = visit_matrix
 
 
 
@@ -131,40 +136,25 @@ def explosive_code_generation(self, mapping_from, query_size, from_index, db_fea
                     patient_sparse_matrix[patient_id].append(0)
         return patient_sparse_matrix
     #made by james
-        def sparse_martrix_gerenation_exposion_by_pateint(self):
-                    
-            patient_sparse_matrix = dict()
-            
-            for patient_id in self.patient_matrix:
-            
-                patient_sparse_matrix[patient_id] = []
-                
-                for code in self.code_dict:
-                
-                    if code in self.patient_matrix[patient_id]:
-                    
-                        if self.patient_matrix[patient_id] >= 1:
+    def sparse_martrix_gerenation_exposion_by_pateint(self):
+        patient_sparse_matrix = dict()
+        for patient_id in self.patient_matrix:
+            patient_sparse_matrix[patient_id] = []
+            for code in self.code_dict:
+                if code in self.patient_matrix[patient_id]:
+                    if self.patient_matrix[patient_id] >= 1:
+                        tuple_val = tuple(1, 0, 0)
                         
-                            tuple_val = tuple(1, 0, 0)
-                            
-                        elif self.patient_matrix[patient_id] >= 0 and self.patient_matrix[patient_id] < 1:
+                    elif self.patient_matrix[patient_id] >= 0 and self.patient_matrix[patient_id] < 1:
+                        tuple_val = tuple(0, 1, 0)
                         
-                            tuple_val = tuple(0, 1, 0)
-                            
-                        else:
-                        
-                            tuple_val = tuple(0 ,0 ,1)
-                            
-                            patient_sparse_matrix[patient_id].append(tuple_val)
-                            
                     else:
-                    
-                        tuple_val = tuple(0,0,0)
-                        
+                        tuple_val = tuple(0 ,0 ,1)
                         patient_sparse_matrix[patient_id].append(tuple_val)
-                        
-            return patient_sparse_matrix
-
+                else:
+                    tuple_val = tuple(0,0,0)
+                    patient_sparse_matrix[patient_id].append(tuple_val)
+        return patient_sparse_matrix
     # Creating the data structures needed for any regression/ML @ the visit resolution
     # NOTE: We use contiguious blocks of memory with NumPy, this is crucial for performance
     def array_generation_for_ml_visit(self, mapping_to, visit_matrix, db_features):
