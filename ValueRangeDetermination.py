@@ -2,7 +2,7 @@ from sklearn.linear_model import LogisticRegression;
 from sklearn.cluster import KMeans
 import jenkspy as jnk
 import numpy as np
-import pymysql
+import MySQLdb as sql
 
 class ValueRangeDetermination(object):
     def __init__(self):
@@ -16,7 +16,7 @@ class ValueRangeDetermination(object):
         host_ = database["host"]
         user_ = database["user"]
         password_ = database["password"]
-        self.connection = pymysql.connect(host=host_, user=user_, password=password_)
+        self.connection = sql.connect(host=host_, user=user_, password=password_)
         self.cursor = self.connection.cursor()
 
     def fetch_observation(self, observation, n_to_fetch):

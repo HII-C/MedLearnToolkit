@@ -1,4 +1,4 @@
-import pymysql
+import MySQLdb as sql
 
 class DerivedLayerCreation(object):
 
@@ -7,7 +7,7 @@ class DerivedLayerCreation(object):
 
 
     def create_database(self, host_, user_, password_, name_, delete_):
-        self.connection = pymysql.connect(host=host_, user=user_, password=password_)
+        self.connection = sql.connect(host=host_, user=user_, password=password_)
         self.cursor = self.connection.cursor()
         if (delete_ == True):
             print("Are you sure that you want to remove the existing derived UMLS database? y/n")
