@@ -14,7 +14,7 @@ class PubMed:
         self.conn = None
         self.cur = None
         self.valid_pub_types = ['D017065', 'D016431', 'D016454']
-        self.useful_articles
+        self.useful_articles = list()
         if (os.path.isfile("pubmed.prog")):
             with open("pubmed.prog", 'r') as handle:
                 self.pubmed_prog = int(handle.readline().strip())
@@ -26,7 +26,15 @@ class PubMed:
     def connect_db(self,  database, table_name, drop=False, schema=None):
         self.conn = sql.connect(**database)
         self.cur = self.conn.cursor()
-
+        if drop:
+            print(f"Are you sure you want to drop the table {table_name}?")
+            print("ALL DATA WILL BE LOST, THIS IS NOT REVERSABLE")
+            user_resp = input("y/n?")
+            if user_resp != "y":
+                print("Exiting now")
+                exit()
+            else:
+                print("Okay, data being dropped")
         self.table_name = table_name
         if drop and (schema is not None):
             self.schema = schema
@@ -59,10 +67,11 @@ class PubMed:
                         self.useful_articles.append(tuple[ele_['MedlineCitation']['PMID']['#text'], pub_type['@UI']])
                 except (TypeError, ValueError, AttributeError, IndexError) as er:
                     pass
+        os.remove(f'{filename}.gz}')
 
     def write_to_sql(self, insert_str):
         exec_str = f"INSERT INTO {self.table_name} {insert_str} VALUES({self.useful_articles})"
-        self.cur.executemany(exec_str)
+        self.cur.executemany(exec_str, self.useful_articles)
         self.conn.commit()
         self.useful_articles = []
 
@@ -70,9 +79,14 @@ class PubMed:
 if __name__ == "__main__":
     example = PubMed()
     pw = getpass.getpass()
-    db_param = {'user': 'hiic', 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
+    db_param = {'user': 'root', 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
     schema = "(PMID CHAR(12), pubtype CHAR(12))"
-    example.connect_db(db_param, drop=True, schema=schema)
-    example.file_from_ftp(example.pubmed_prog)
     insert_str = "(PMID, pubtype)"
-    example.write_to_sql(insert_str=insert_str)
+    example.connect_db(db_param, 'derived', drop=False, schema=schema)
+    pubmed_prog = 2
+    while pubmed_prog < 900:
+        example.file_from_ftp(pubmed_prog)
+        example.write_to_sql(insert_str=insert_str)
+        print(pubmed_prog)
+        pubmed_prog += 1
+
