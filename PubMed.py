@@ -67,7 +67,7 @@ class PubMed:
                         self.useful_articles.append(tuple[ele_['MedlineCitation']['PMID']['#text'], pub_type['@UI']])
                 except (TypeError, ValueError, AttributeError, IndexError) as er:
                     pass
-        os.remove(f'{filename}.gz}')
+        os.remove(f'{filename}')
 
     def write_to_sql(self, insert_str):
         exec_str = f"INSERT INTO {self.table_name} {insert_str} VALUES({self.useful_articles})"
@@ -83,8 +83,8 @@ if __name__ == "__main__":
     schema = "(PMID CHAR(12), pubtype CHAR(12))"
     insert_str = "(PMID, pubtype)"
     example.connect_db(db_param, 'derived', drop=False, schema=schema)
-    pubmed_prog = 2
-    while pubmed_prog < 900:
+    pubmed_prog = 900
+    while pubmed_prog < 928:
         example.file_from_ftp(pubmed_prog)
         example.write_to_sql(insert_str=insert_str)
         print(pubmed_prog)
