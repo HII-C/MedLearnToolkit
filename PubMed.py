@@ -90,8 +90,8 @@ class PubMed:
 if __name__ == "__main__":
     example = PubMed()
     pw = getpass.getpass()
-    # db_param = {'user': 'root', 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
-    db_param = {'user': 'root', 'db': 'pubmed', 'host': 'localhost', 'password': pw}
+    db_param = {'user': 'root', 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
+    # db_param = {'user': 'root', 'db': 'pubmed', 'host': 'localhost', 'password': pw}
     schema = "(PMID CHAR(12), pubtype CHAR(12))"
     insert_str = "(PMID, pubtype)"
     example.connect_db(db_param, 'derived', drop=True, schema=schema)
