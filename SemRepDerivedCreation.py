@@ -58,7 +58,7 @@ class SemRepDerivedCreation:
             self.new_der_table = True
 
     def get_n_random_useful_articles(self, n=1000):
-        exec_str = f"SELECT * from {self.useful_table_name} ORDER BY RAND() limit {n}"
+        exec_str = f"SELECT PMID from {self.useful_table_name} ORDER BY RAND() limit {n}"
         self.useful_cur.execute(exec_str)
         return tuple(self.useful_cur)
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     useful_table_name = input(f"What is the table to be used on {useful_db['db']}?\n")
     example.connect_useful_db(useful_db, useful_table_name)
-    print(f'Connected to database: {useful_table_name["db"]} on table: {useful_table_name}')
+    print(f'Connected to database: {useful_db["db"]} on table: {useful_table_name}')
 
     semmed_table_name = input(f"What is the table to be used on {semmed_db['db']}?\n")
     example.connect_semmed(semmed_db, semmed_table_name)
