@@ -91,10 +91,12 @@ if __name__ == "__main__":
     example = PubMed()
     pw = getpass.getpass()
     db_param = {'user': 'root', 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
-    # db_param = {'user': 'root', 'db': 'pubmed', 'host': 'localhost', 'password': pw}
     schema = "(PMID CHAR(12), pubtype CHAR(12))"
     insert_str = "(PMID, pubtype)"
-    example.connect_db(db_param, 'derived', drop=True, schema=schema)
+    print("Access file to mute this line, and adknowledge that the line directly below will\n")
+    print("WIPE THE STANDING PUBMED DATABASE IF DROP IS NOT SET TO FALSE")
+    exit()
+    example.connect_db(db_param, 'test', drop=True, schema=schema)
     pubmed_prog = 0
     while pubmed_prog < 928:
         example.file_from_ftp(pubmed_prog)

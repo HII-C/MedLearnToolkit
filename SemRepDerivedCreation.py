@@ -14,7 +14,7 @@ class SemRepDerivedCreation:
         self.useful_table_name = None
 
         self.der_conn = None
-        self.der_cur = sql.cursors.Cursor
+        self.der_cur = None
         self.der_table_name = None
         self.new_der_table = False
 
@@ -57,7 +57,7 @@ class SemRepDerivedCreation:
                  OCC_COUNT INT)""")
             self.new_der_table = True
 
-    def get_n_random_useful_articles(self, n=10000):
+    def get_n_random_useful_articles(self, n=1000):
         exec_str = f"SELECT * from {self.useful_table_name} ORDER BY RAND() limit {n}"
         self.useful_cur.execute(exec_str)
         return tuple(self.useful_cur)
@@ -67,14 +67,14 @@ class SemRepDerivedCreation:
         exec_str = f"SELECT ({sel_str}) from {self.semmed_table_name} where PMID in {pmid_list} limit {n}"
         self.semmed_cur.execute(exec_str)
         # self.list_of_rel_preds = [*self.list_of_rel_preds, *self.semmed_cur]
-        self.list_of_rel_preds = self.semmed_cur
+        self.list_of_rel_preds = [*self.semmed_cur]
 
     def assign_occ_to_preds(self):
         for pred in self.list_of_rel_preds:
             pred = tuple(pred)
             self.dict_of_pred_occ[pred] += 1
         
-        exec_str = f"INSERT INTO {self.der_table_name} VALUES(%s,%s,%s,%s,%s,%s,%s)"
+        exec_str = f"INSERT INTO {self.der_table_name} VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
         val_list = list()
         for val in self.dict_of_pred_occ.items():
             val_list.append(tuple([*val_list[0], val_list[1]]))
@@ -86,9 +86,9 @@ if __name__ == "__main__":
     user = input("What is the name of the DB user? (Must have access to semmed and derived and pubmed)\n")
     pw = getpass(f"What is the password for {user}?\n")
 
-    semmed_db = {"user": user, "db": "semmed", 'host': 'db01.healthcreek.org', 'password': pw}
-    der_db = {"user": user, "db": "derived", 'host': 'db01.healthcreek.org', 'password': pw}
-    useful_db = {"user": user, "db": "pubmed", 'host': 'db01.healthcreek.org', 'password': pw}
+    semmed_db = {'user': user, 'db': 'semmed', 'host': 'db01.healthcreek.org', 'password': pw}
+    der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
+    useful_db = {'user': user, 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
 
     useful_table_name = input(f"What is the table to be used on {useful_db['db']}?\n")
     example.connect_useful_db(useful_db, useful_table_name)
