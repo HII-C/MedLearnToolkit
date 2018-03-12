@@ -39,7 +39,7 @@ class SemRepDerivedCreation:
         if drop:
             print(f"Are you sure you want to drop the table \"{table_name}\"?")
             print("ALL DATA WILL BE LOST, THIS IS NOT REVERSABLE")
-            user_resp = input("y/n?")
+            user_resp = input("y/n?\n")
             if user_resp != "y":
                 print("Exiting now")
                 exit()
@@ -60,24 +60,39 @@ class SemRepDerivedCreation:
     def get_n_random_useful_articles(self, n=1000):
         exec_str = f"SELECT PMID from {self.useful_table_name} ORDER BY RAND() limit {n}"
         self.useful_cur.execute(exec_str)
-        return tuple(self.useful_cur)
+        ret_list = list()
+        return self.useful_cur.fetchall()
 
     def useful_preds_by_PMID(self, pmid_list, n=10000):
         sel_str = "PREDICATE, SUBJECT_CUI, SUBJECT_NAME, SUBJECT_SEMTYPE, OBJECT_CUI, OBJECT_NAME, OBJECT_SEMTYPE"
-        exec_str = f"SELECT ({sel_str}) from {self.semmed_table_name} where PMID in {pmid_list} limit {n}"
+        new_pmid = [str(x[0]) for x in pmid_list if x[0] != ""]
+        exec_str = f"SELECT {sel_str} FROM {self.semmed_table_name} WHERE PMID in {tuple(new_pmid)}"
         self.semmed_cur.execute(exec_str)
-        # self.list_of_rel_preds = [*self.list_of_rel_preds, *self.semmed_cur]
-        self.list_of_rel_preds = [*self.semmed_cur]
+        self.list_of_rel_preds = self.semmed_cur.fetchall()
 
     def assign_occ_to_preds(self):
+        s_ = "(PREDICATE, SUBJECT_CUI, SUBJECT_NAME, SUBJECT_SEMTYPE, OBJECT_CUI, OBJECT_NAME, OBJECT_SEMTYPE, OCC_COUNT)"
         for pred in self.list_of_rel_preds:
             pred = tuple(pred)
             self.dict_of_pred_occ[pred] += 1
         
-        exec_str = f"INSERT INTO {self.der_table_name} VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
+        exec_str = f"INSERT INTO {self.der_table_name} {s_} VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
         val_list = list()
-        for val in self.dict_of_pred_occ.items():
-            val_list.append(tuple([*val_list[0], val_list[1]]))
+        c = 0
+        for val in self.dict_of_pred_occ.keys():
+            list_val = [*val]
+            if (len(list_val[1]) == 8) and (len(list_val[4]) == 8):
+                val_list.append(tuple([*list_val, self.dict_of_pred_occ[val]]))
+            else:
+                if "|" in list_val[4]:
+                    new_val = list_val[4].split("|")[0]
+                    if len(new_val) == 8 and (len(list_val[4]) == 8):
+                        list_val[4] = new_val
+                        val_list.append(tuple([*list_val, self.dict_of_pred_occ[val]]))
+            if c < 5:
+                print(val_list[-1])
+                c += 1
+        print(val_list[-1])
         self.der_cur.executemany(exec_str, val_list)
         self.der_conn.commit()
 
