@@ -83,22 +83,26 @@ class SemRepDerivedCreation:
 
 if __name__ == "__main__":
     example = SemRepDerivedCreation()
-    user = input("What is the name of the DB user? (Must have access to semmed and derived and pubmed)\n")
+    # user = input("What is the name of the DB user? (Must have access to semmed and derived and pubmed)\n")
+    user = 'hiic'
     pw = getpass(f"What is the password for {user}?\n")
 
     semmed_db = {'user': user, 'db': 'semmed', 'host': 'db01.healthcreek.org', 'password': pw}
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
     useful_db = {'user': user, 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
 
-    useful_table_name = input(f"What is the table to be used on {useful_db['db']}?\n")
+    # useful_table_name = input(f"What is the table to be used on {useful_db['db']}?\n")
+    useful_table_name = "derived"
     example.connect_useful_db(useful_db, useful_table_name)
     print(f'Connected to database: {useful_db["db"]} on table: {useful_table_name}')
 
-    semmed_table_name = input(f"What is the table to be used on {semmed_db['db']}?\n")
+    # semmed_table_name = input(f"What is the table to be used on {semmed_db['db']}?\n")
+    semmed_table_name = "PREDICATION"
     example.connect_semmed(semmed_db, semmed_table_name)
     print(f'Connected to database: {semmed_db["db"]} on table: {semmed_table_name}')
 
-    der_table_name = input(f"What is the table to be used on {der_db['db']}?\n")
+    # der_table_name = input(f"What is the table to be used on {der_db['db']}?\n")
+    der_table_name = "austin_pred_occ_test"
     example.connect_der(der_db, der_table_name, drop=True)
     print(f'Connected to database: {der_db["db"]} on table: {der_table_name}')
 
