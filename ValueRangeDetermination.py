@@ -50,7 +50,7 @@ class ValueRangeDetermination(object):
 
 if __name__ == "__main__":
     db = {"user": "hiic", "password": "greenes2018", "host": "db01.healthcreek.org"}
-    vrd_test = value_range_det()
+    vrd_test = ValueRangeDetermination()
     vrd_test.table = "mimic.LABEVENTS"
     vrd_test.connect_db(db)
     vrd_test.fetch_observation("50931", 1000)

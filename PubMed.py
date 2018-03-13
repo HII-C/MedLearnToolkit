@@ -1,6 +1,7 @@
 import os
 from ftplib import FTP
 import xmltodict
+import xml.etree.ElementTree as ET
 import getpass
 import gzip
 import MySQLdb as sql
@@ -14,7 +15,7 @@ class PubMed:
         self.conn = None
         self.cur = None
         self.valid_pub_types = ['D017065', 'D016431', 'D016454']
-        self.useful_articles
+        self.useful_articles = list()
         if (os.path.isfile("pubmed.prog")):
             with open("pubmed.prog", 'r') as handle:
                 self.pubmed_prog = int(handle.readline().strip())
@@ -26,7 +27,15 @@ class PubMed:
     def connect_db(self,  database, table_name, drop=False, schema=None):
         self.conn = sql.connect(**database)
         self.cur = self.conn.cursor()
-
+        if drop:
+            print(f"Are you sure you want to drop the table {table_name}?")
+            print("ALL DATA WILL BE LOST, THIS IS NOT REVERSABLE")
+            user_resp = input("y/n?\n")
+            if user_resp != "y":
+                print("Exiting now")
+                exit()
+            else:
+                print("Okay, data being dropped")
         self.table_name = table_name
         if drop and (schema is not None):
             self.schema = schema
@@ -34,6 +43,7 @@ class PubMed:
             self.cur.execute(exec_str)
             exec_str = f"CREATE TABLE {table_name} {schema}"
             self.cur.execute(exec_str)
+            self.conn.commit()
 
     def file_from_ftp(self, thread_prog_num):
         server_name = 'ftp.ncbi.nlm.nih.gov'
@@ -42,27 +52,37 @@ class PubMed:
         file_num = str(thread_prog_num)
         while len(file_num) < 4:
             file_num = f'0{file_num}'
-
+        
         filename = f'pubmed18n{file_num}.xml'
-
+        
         ftp = FTP(server_name)
         ftp.login('anonymous', 'austinmichne@gmail.com')
         ftp.cwd(dir_)
         ftp.retrbinary(f'RETR {filename}.gz', open(filename, 'wb+').write)
 
         xml_file = gzip.open(filename).read()
-        art_dict = xmltodict.parse(xml_file)
-        for ele_ in art_dict['PubmedArticleSet']['PubmedArticle']:
-            for pub_type in ele_['MedlineCitation']['Article']['PublicationTypeList']['PublicationType']:
-                try:
-                    if pub_type['@UI'] in self.valid_pub_types:
-                        self.useful_articles.append(tuple[ele_['MedlineCitation']['PMID']['#text'], pub_type['@UI']])
-                except (TypeError, ValueError, AttributeError, IndexError) as er:
-                    pass
+        root = ET.fromstring(xml_file)
 
-    def write_to_sql(self, insert_str):
-        exec_str = f"INSERT INTO {self.table_name} {insert_str} VALUES({self.useful_articles})"
-        self.cur.executemany(exec_str)
+        for ele_ in root.iter('PubmedArticle'):
+            useful_flag = False
+            useful_ui = None
+            useful_ui_list = list()
+            for ui_ in ele_.iter('PublicationType'):
+                if ui_.attrib['UI'] in self.valid_pub_types:
+                    useful_flag = True
+                    useful_ui = ui_.attrib['UI']
+                    break
+            if useful_flag:
+                for x in ele_.iter('PublicationType'):
+                    useful_ui_list.append(x.attrib['UI'])
+                for x in ele_.iter('PMID'):
+                    pmid = x.text
+                self.useful_articles.append(tuple([pmid, useful_ui]))
+        os.remove(f'{filename}')
+
+    def write_to_sql(self):
+        exec_str = f"INSERT INTO {self.table_name} VALUES (%s,%s)"
+        self.cur.executemany(exec_str, self.useful_articles)
         self.conn.commit()
         self.useful_articles = []
 
@@ -70,9 +90,17 @@ class PubMed:
 if __name__ == "__main__":
     example = PubMed()
     pw = getpass.getpass()
-    db_param = {'user': 'hiic', 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
+    db_param = {'user': 'root', 'db': 'pubmed', 'host': 'db01.healthcreek.org', 'password': pw}
     schema = "(PMID CHAR(12), pubtype CHAR(12))"
-    example.connect_db(db_param, drop=True, schema=schema)
-    example.file_from_ftp(example.pubmed_prog)
     insert_str = "(PMID, pubtype)"
-    example.write_to_sql(insert_str=insert_str)
+    print("Access file to mute this line, and adknowledge that the line directly below will\n")
+    print("WIPE THE STANDING PUBMED DATABASE IF DROP IS NOT SET TO FALSE")
+    exit()
+    example.connect_db(db_param, 'test', drop=True, schema=schema)
+    pubmed_prog = 0
+    while pubmed_prog < 928:
+        example.file_from_ftp(pubmed_prog)
+        example.write_to_sql()
+        print(pubmed_prog)
+        pubmed_prog += 1
+
