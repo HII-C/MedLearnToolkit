@@ -25,9 +25,9 @@ class MimicToUmlsCui:
         self.umls_table = "MRCONSO"
 
     def create_derived(self, tbl, n=10000):
-        self.mimic_cur.execute(f"DROP TABLE IF EXISTS {tbl}")
-        create_str = """(CUI CHAR(8), AUI VARCHAR(9), SAB VARCHAR(40), CODE CHAR(100), ITEMID SMALLINT UNSIGNED, LOINC_CODE VARCHAR(255))"""
-        self.mimic_cur.execute(f"CREATE TABLE {tbl}{create_str}")
+        #self.mimic_cur.execute(f"DROP TABLE IF EXISTS {tbl}")
+        create_str = """(CUI CHAR(8), AUI VARCHAR(9), SAB VARCHAR(40), CODE CHAR(100), ITEMID SMALLINT UNSIGNED, LOINC_CODE VARCHAR(255), LABEL VARCHAR(100))""" #added label as string identifier
+        #self.mimic_cur.execute(f"CREATE TABLE {tbl} {create_str}")
         # from_str = " umls.MRCONSO, mimic.D_LABITEMS"
         # where_str = """  umls.MRCONSO t1 umls.MRCONSO.CODE = mimic.D_LABITEMS.LOINC_CODE 
         # and umls.MRCONSO.LAT = 'ENG' and umls.MRCONSO.TTY = 'CN' and umsl.MRCONSO.SAB = 'LNC'"""
@@ -41,15 +41,23 @@ class MimicToUmlsCui:
         t1.TTY = 'CN' and
         t1.SAB = 'LNC'
         """
-        sel_str = "SELECT CUI, AUI, SAB, CODE, ITEMID, LOINC_CODE"
-        exec_str = f"INSERT INTO {tbl} {sel_str} from {j_str} limit {n}"
+        #sel_str = "SELECT CUI, AUI, SAB, CODE, ITEMID, LOINC_CODE"
+        #exec_str = f"INSERT INTO {tbl} {sel_str} from {j_str} limit {n}"
+        sel_str = "SELECT DISTINCT m.CUI, m.AUI, m.SAB, m.CODE, d.ITEMID, d.LOINC_CODE, d.LABEL"
+        j_str = """umls.MRCONSO as m INNER JOIN mimic.D_LABITEMS as d ON
+        m.CODE = d.LOINC_CODE
+        """
+        l_str = "m.SAB = 'LNC' AND m.LAT = 'ENG'"
+        #exec_str = f"INSERT INTO {tbl} {sel_str} from {j_str} where {l_str} limit {n}"
+        exec_str = f"CREATE TABLE derived.{tbl} AS {sel_str} from {j_str} where {l_str} limit 50" #temp
         self.mimic_cur.execute(exec_str)
         self.mimic_conn.commit()
 
 if __name__ == "__main__":
     print("Starting")
     # user = input("What is the user to access the databases?\n")
-    user = 'root'
+    #user = 'root'
+    user = 'hiic' #temp measure for access
     pw = getpass(f'What is the password for the user {user}?\n')
 
     gen_db = {'user': user, 'host': 'db01.healthcreek.org', 'password': pw}
