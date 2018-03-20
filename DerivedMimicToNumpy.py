@@ -48,3 +48,6 @@ class DerivedMimicToNumpy:
                     full_np_arr[index][pat_index] = val
             dict_of_nparr[ty] = full_np_arr
         return dict_of_nparr
+
+if __name__ == "__main__":
+    

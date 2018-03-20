@@ -19,11 +19,11 @@ class LabEventsWithDiagnosesICD:
         lab_events_str = """mimic.LABEVENTS"""
         diag_icd_str = """mimic.DIAGNOSES_ICD"""
 
-        create_str = """(SUBJECT_ID SMALLINT UNSIGNED, HADM_ID SMALLINT UNSIGNED, ITEM_ID UNSIGNED INT, ICD9_CODE UNSIGNED INT, FROM_LE_OR_DIAG SMALLINT UNSIGNED)"""
+        create_str = """(SUBJECT_ID SMALLINT UNSIGNED, HADM_ID SMALLINT UNSIGNED, ITEM_ID UNSIGNED INT, ICD9_CODE UNSIGNED INT, SOURCE SMALLINT UNSIGNED)"""
         select_str = """SELECT SUBJECT_ID, HADM_ID, ITEM_ID"""
             
         exec_str = f"""CREATE TABLE {tbl}{create_str} AS {select_str} FROM {lab_events_str}""" #creates the new table from lab_events
-        update_str = f"""UPDATE {tbl} SET FROM_LE_OR_DIAG = 0""" #0 means row was from mimic.LABEVENTS, 1 means row was from DIAGNOSES_ICD
+        update_str = f"""UPDATE {tbl} SET SOURCE = 0""" #0 means row was from mimic.LABEVENTS, 1 means row was from DIAGNOSES_ICD
 
         self.mimic_cur.execute(exec_str)
         self.mimic_conn.commit()
@@ -32,7 +32,7 @@ class LabEventsWithDiagnosesICD:
 
         #add DIAGNOSES_ICD columns to derived layer
         insert_str = f"""INSERT INTO {tbl} (SUBJECT_ID, HADM_ID, ICD9_CODE) SELECT SUBJECT_ID, HADM_ID, ICD9_CODE FROM {diag_icd_str}"""
-        update_str = f"""UPDATE {tbl} SET FROM_LE_OR_DIAG = 1 WHERE ICD9_CODE IS NOT NULL""" #change the flag to show row came from DIAGNOSES_ICD
+        update_str = f"""UPDATE {tbl} SET SOURCE = 1 WHERE ICD9_CODE IS NOT NULL""" #change the flag to show row came from DIAGNOSES_ICD
 
         self.mimic_cur.execute(insert_str)
         self.mimic_conn.commit()
