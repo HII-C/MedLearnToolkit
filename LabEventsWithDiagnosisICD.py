@@ -26,14 +26,18 @@ class LabEventsWithDiagnosesICD:
             update_str = f"""UPDATE {tbl} SET FROM_LE_OR_DIAG = 0""" #0 means row was from mimic.LABEVENTS, 1 means row was from DIAGNOSES_ICD
 
             self.mimic_cur.execute(exec_str)
+            self.mimic_conn.commit()
             self.mimic_cur.execute(update_str)
+            self.mimic_conn.commit()
 
             #add DIAGNOSES_ICD columns to derived layer
             insert_str = f"""INSERT INTO {tbl} (SUBJECT_ID, HADM_ID, ICD9_CODE) SELECT SUBJECT_ID, HADM_ID, ICD9_CODE FROM {diag_icd_str}"""
             update_str = f"""UPDATE {tbl} SET FROM_LE_OR_DIAG = 1 WHERE ICD9_CODE IS NOT NULL""" #change the flag to show row came from DIAGNOSES_ICD
 
             self.mimic_cur.execute(insert_str)
+            self.mimic_conn.commit()
             self.mimic_cur.execute(update_str)
+            self.mimic_conn.commit()
 
 
 if __name__ == "__main__":
