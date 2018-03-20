@@ -25,38 +25,39 @@ class MimicToUmlsCui:
         self.umls_table = "MRCONSO"
 
     def create_derived(self, tbl, n=10000):
-        self.mimic_cur.execute(f"DROP TABLE IF EXISTS {tbl}") 
-        # create_str = "CUI CHAR(8), AUI VARCHAR(9), SAB VARCHAR(40), CODE CHAR(100), ITEMID SMALLINT UNSIGNED, LOINC_CODE VARCHAR(255))"
-        create_str = """(CUI CHAR(8), AUI VARCHAR(9), SAB VARCHAR(40), CODE CHAR(100))"""
-        self.mimic_cur.execute(f"CREATE TABLE {tbl}{create_str}") 
-        # t1.STR = t2.LABEL and
-        #j_str = """
-        #umls.MRCONSO t3
-        #INNER JOIN mimic.D_LABITEMS t2 ON t3.CODE LIKE t2.LOINC_CODE and t3.SAB = 'LNC'
-        #INNER JOIN umls.MRSAT t1 ON t3.LAT = 'ENG' and t3.TTY = 'CN' and t3.CUI = t1.CUI
-        #"""
-        j_str = ("SELECT conso.CUI, conso.AUI, conso.SAB, conso.CODE FROM "
-            "(SELECT * FROM umls.MRSAT as sat JOIN mimic.D_LABITEMS as lab ON "
-                "sat.CODE = lab.LOINC_CODE and "
-                "sat.SAB = 'LNC' and "
-                "sat.SUI IS NOT NULL and "
-                "sat.METAUI IS NOT NULL) as temp "
-            "JOIN umls.MRCONSO as conso ON "
-                "temp.CUI = conso.CUI and "
-                "conso.SAB = 'LNC' and "
-                "conso.TS = 'P' and "
-                "conso.TTY = 'CN'")
-
-        # sel_str = """SELECT conso.CUI, conso.AUI, conso.SAB, conso.CODE, lab.ITEMID, lab.LOINC_CODE"""
-        # exec_str = f"INSERT INTO {tbl} {sel_str} from {j_str} limit {n}"
-        exec_str = f"INSERT INTO {tbl} {j_str} limit {n}"
+        #self.mimic_cur.execute(f"DROP TABLE IF EXISTS {tbl}")
+        create_str = """(CUI CHAR(8), AUI VARCHAR(9), SAB VARCHAR(40), CODE CHAR(100), ITEMID SMALLINT UNSIGNED, LOINC_CODE VARCHAR(255), LABEL VARCHAR(100))""" #added label as string identifier
+        #self.mimic_cur.execute(f"CREATE TABLE {tbl} {create_str}")
+        # from_str = " umls.MRCONSO, mimic.D_LABITEMS"
+        # where_str = """  umls.MRCONSO t1 umls.MRCONSO.CODE = mimic.D_LABITEMS.LOINC_CODE 
+        # and umls.MRCONSO.LAT = 'ENG' and umls.MRCONSO.TTY = 'CN' and umsl.MRCONSO.SAB = 'LNC'"""
+        j_str = """
+        umls.MRCONSO t1 
+            INNER JOIN
+        mimic.D_LABITEMS t2 
+            ON 
+        t1.STR = t2.LABEL and
+        t1.LAT = 'ENG' and
+        t1.TTY = 'CN' and
+        t1.SAB = 'LNC'
+        """
+        #sel_str = "SELECT CUI, AUI, SAB, CODE, ITEMID, LOINC_CODE"
+        #exec_str = f"INSERT INTO {tbl} {sel_str} from {j_str} limit {n}"
+        sel_str = "SELECT DISTINCT m.CUI, m.AUI, m.SAB, m.CODE, d.ITEMID, d.LOINC_CODE, d.LABEL"
+        j_str = """umls.MRCONSO as m INNER JOIN mimic.D_LABITEMS as d ON
+        m.CODE = d.LOINC_CODE
+        """
+        l_str = "m.SAB = 'LNC' AND m.LAT = 'ENG'"
+        #exec_str = f"INSERT INTO {tbl} {sel_str} from {j_str} where {l_str} limit {n}"
+        exec_str = f"CREATE TABLE derived.{tbl} AS {sel_str} from {j_str} where {l_str} limit 50" #temp
         self.mimic_cur.execute(exec_str)
         self.mimic_conn.commit()
 
 if __name__ == "__main__":
     print("Starting")
     # user = input("What is the user to access the databases?\n")
-    user = 'root'
+    #user = 'root'
+    user = 'hiic' #temp measure for access
     pw = getpass(f'What is the password for the user {user}?\n')
 
     gen_db = {'user': user, 'host': 'db01.healthcreek.org', 'password': pw}
