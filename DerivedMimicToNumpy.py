@@ -7,6 +7,7 @@ class DerivedMimicToNumpy:
         self.der_mimic_conn = None
         self.der_mimic_cur = None
         self.der_mimic_table = None
+        self.universe_of_codes = dict()
 
     def connect_der_mimic_db(self, database, table_name):
         self.der_mimic_conn = sql.connect(**database)
@@ -22,18 +23,17 @@ class DerivedMimicToNumpy:
         dict_of_nparr = dict()
         if type(data_types) is str:
             data_types = [data_types]
-
-
         for ty in data_types:
             set_of_codes = set()
             code_by_patient = defaultdict(list)
             for pat in patients:
                 self.der_mimic_cur.execute(
-                    f"SELECT CODE FROM {self.der_mimic_table} WHERE PMID = {pat} and SOURCE = {m_[ty]}")
+                    f"SELECT CODE FROM {self.der_mimic_table} WHERE SUBJECT_ID = {pat} and SOURCE = {m_[ty]}")
                 tmp = [*self.der_mimic_cur.fetchall()]
                 code_by_patient[pat] = tmp
                 set_of_codes = set(tmp) | set_of_codes
 
+            self.universe_of_codes[ty] = set_of_codes
             base_d = dict()
             # Use X = codes, Y = patients, set dtype to smallest int since binary but int needed for ML
             full_np_arr = np.ndarray(shape=(len(set_of_codes), len(patients)), dtype=np.int8)
