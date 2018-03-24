@@ -1,5 +1,5 @@
-import MySQLdb as sql
 from getpass import getpass
+import MySQLdb as sql
 
 class MimicToUmlsCui:
     def __init__(self):
@@ -64,21 +64,15 @@ class MimicToUmlsCui:
         if drop == True:
             self.der_cur.execute(f"DROP TABLE IF EXISTS {table}")
             tbl_attr = "(SUBJECT_ID INT, HADM_ID INT, CUI CHAR(8), SOURCE SMALLINT UNSIGNED)"
-            self.der_cur.execute(f"""CREATE TABLE derived.{table} {tbl_attr}""")
-        insert_str = f"(SUBJECT_ID, HADM_ID, CUI, {source_to_int[source]})"
-        j_str = f"""
-            mimic.{source} m 
-                INNER JOIN 
-            derived.{umls_map} d
-                ON
-            d.ITEMID = m.ITEMID
-            """
-        exec_str = f"""
-            INSERT INTO derived.{table} {insert_str} 
-                SELECT m.SUBJECT_ID, m.HADM_ID, m.CUI
-            FROM {j_str} LIMIT {n}
-            """
-        self.der_cur.execute(exec_str)
+            self.der_cur.execute(f"CREATE TABLE derived.{table} {tbl_attr}")
+        j_str = f"""mimic.{source} AS m INNER JOIN derived.{umls_map} AS d ON d.ITEMID = m.ITEMID"""
+        
+        select_str = f"m.SUBJECT_ID, m.HADM_ID, d.CUI, {source_to_int[source]}"
+        limit_str = f" LIMIT {n}"
+        if n is None:
+            limit_str = ""
+        self.der_cur.execute(f"""INSERT INTO derived.{table} SELECT {select_str} from {j_str}{limit_str}""")
+        self.der_conn.commit()
 
 if __name__ == "__main__":
     print("Starting")
@@ -98,7 +92,8 @@ if __name__ == "__main__":
     example.connect_umls_db(umls_db)
     example.connect_der_db(der_db)
     # example.create_derived('ItemIdToCUI')
-    example.mimic_table_to_umls_cui("DIAGNOSES_ICD",
+    example.mimic_table_to_umls_cui("LABEVENTS",
                                     "ItemIdToCUI", 
                                     "patients_as_cui", 
-                                    drop=True)
+                                    drop=True,
+                                    n=None)
