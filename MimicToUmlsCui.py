@@ -32,14 +32,15 @@ class MimicToUmlsCui:
 
     def table_map_itemid_cui(self, table, source, drop=False, n=10000):
         if drop is True:
-            self.mimic_cur.execute(f"DROP TABLE IF EXISTS {table}")
+            self.der_cur.execute(f"DROP TABLE IF EXISTS {table}")
             create_str_dict = {
                         "D_LABITEMS": """(CUI CHAR(8), AUI VARCHAR(9), SAB VARCHAR(40), CODE CHAR(100),
                                     ITEMID SMALLINT UNSIGNED, LOINC_CODE VARCHAR(255), LABEL VARCHAR(100))""",
                         "D_ICD_DIAGNOSES": """(CUI CHAR(8), SAB VARCHAR(40), CODE CHAR(100),
-                                        ICD9_CODE VARCHAR(10), SHORT_TITLE VARCHAR(50)"""
+                                        ICD9_CODE VARCHAR(10), SHORT_TITLE VARCHAR(50))"""
             }
-            self.mimic_cur.execute(f"CREATE TABLE {table} {create_str_dict[source]}")
+            self.der_cur.execute(f"CREATE TABLE {table} {create_str_dict[source]}")
+            self.der_conn.commit()
 
         on_str_dict = {
             "D_LABITEMS": """
@@ -54,15 +55,19 @@ class MimicToUmlsCui:
                                """
         }
         sel_str_dict = {
-            "D_LABITEMS": "u.CUI, u.AUI, u.SAB, u.CODE, m.ITEMID, m.LOINC_CODE, m.LABEL",
-            "D_ICD_DIAGNOSES": "u.CUI, u.SAB, u.CODE, m.ICD9_CODE, m.SHORT_TITLE"
+            "D_LABITEMS": """u.CUI, ANY_VALUE(u.AUI), ANY_VALUE(u.SAB), ANY_VALUE(u.CODE),
+                             ANY_VALUE(m.ITEMID), ANY_VALUE(m.LOINC_CODE), ANY_VALUE(m.LABEL)""",
+            "D_ICD_DIAGNOSES": "u.CUI, ANY_VALUE(u.SAB), ANY_VALUE(u.CODE), ANY_VALUE(m.ICD9_CODE), ANY_VALUE(m.SHORT_TITLE)"
         }
-        sel_str = f"SELECT DISTINCT {sel_str_dict[source]}"
+        group_dict = {
+            "D_LABITEMS": " GROUP BY(u.CUI)",
+            "D_ICD_DIAGNOSES": " GROUP BY(u.CUI)"
+        }
         j_str = f"""umls.MRCONSO as u INNER JOIN mimic.{source} as m ON {on_str_dict[source]}"""
         limit_str = f" LIMIT {n}"
         if n is None:
             limit_str = ""
-        exec_str = f"INSERT INTO derived.{table} SELECT {sel_str_dict[source]} from {j_str}{limit_str}" #temp
+        exec_str = f"INSERT INTO derived.{table} SELECT {sel_str_dict[source]} from {j_str}{limit_str}{group_dict[source]}" #temp
         self.der_cur.execute(exec_str)
         self.der_conn.commit()
     
@@ -72,7 +77,11 @@ class MimicToUmlsCui:
             self.der_cur.execute(f"DROP TABLE IF EXISTS {table}")
             tbl_attr = "(SUBJECT_ID INT, HADM_ID INT, CUI CHAR(8), SOURCE SMALLINT UNSIGNED)"
             self.der_cur.execute(f"CREATE TABLE derived.{table} {tbl_attr}")
-        j_str = f"""mimic.{source} AS m INNER JOIN derived.{umls_map} AS d ON d.ITEMID = m.ITEMID"""
+        on_dict = {
+            "LABEVENTS": "d.ITEMID = m.ITEMID",
+            "DIAGNOSES_ICD": "d.ICD9_CODE = m.ICD9_CODE"
+        }
+        j_str = f"""mimic.{source} AS m INNER JOIN derived.{umls_map} AS d ON {on_dict[source]}"""
         
         select_str = f"m.SUBJECT_ID, m.HADM_ID, d.CUI, {source_to_int[source]}"
         limit_str = f" LIMIT {n}"
@@ -98,9 +107,9 @@ if __name__ == "__main__":
     example.connect_mimic_db(mimic_db)
     example.connect_umls_db(umls_db)
     example.connect_der_db(der_db)
-    example.table_map_itemid_cui('ICD9_to_CUI', "D_ICD9_DIAGNOSES", drop=True)
-    # example.mimic_table_to_umls_cui("LABEVENTS",
-    #                                 "ItemIdToCUI", 
-    #                                 "patients_as_cui", 
-    #                                 drop=True,
-    #                                 n=None)
+    # example.table_map_itemid_cui('LOINC_to_CUI', "D_LABITEMS", drop=True, n=None)
+    example.mimic_table_to_umls_cui("DIAGNOSES_ICD",
+                                     "ICD9_to_CUI", 
+                                     "patients_as_cui", 
+                                     drop=False,
+                                     n=None)
