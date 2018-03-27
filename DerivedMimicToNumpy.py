@@ -1,7 +1,7 @@
 import MySQLdb as sql
 from collections import defaultdict
 from getpass import getpass
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.tree import ExtraTreeClassifier
 from sklearn.metrics import accuracy_score
@@ -99,17 +99,31 @@ class DerivedMimicToNumpy:
         print("Right hand side of matrix formed")
         return ret_list
 
+    def logregobj(self, preds, dtrain):
+        labels = dtrain.get_label()
+        preds = 1.0 / (1.0 + np.exp(-preds))
+        grad = preds - labels
+        hess = preds * (1.0 - preds)
+        return grad, hess
+
     def init_ML_model(self, data, labels):
-        X_train, x_test, Y_train, y_test = train_test_split(data.transpose(), labels)
-        #xg_train = xg.DMatrix(x_train, y_train)
-        regr = xg.XGBClassifier(objective="binary:logistic")
-        # regr = GradientBoostingClassifier()
-        # regr = ExtraTreeClassifier()
-        regr.fit(X_train, Y_train)
-        y_pred = regr.predict()
-        predictions = [round(value) for value in y_pred]
-        accuracy = accuracy_score(y_test, predictions)
-        print(f"Accuracy: {accuracy * 100.0}")
+        print(f'Lenght of patient data {len(data)}')
+        print(f'Lenght of label data {len(labels)}')
+        # regr = xg.XGBClassifier(objective="binary:logistic")
+        # regr.fit(X_train, Y_train)
+        # y_pred = regr.predict(x_test)
+        # predictions = [round(value) for value in y_pred]
+        # accuracy = accuracy_score(y_test, y_pred)
+        # print(f"Accuracy: {accuracy * 100.0}")
+        X_train, x_test, Y_train, y_test = train_test_split(data, labels)
+        d_train = xg.DMatrix(X_train, Y_train)
+        d_test = xg.DMatrix(x_test, y_test)
+        param = {'max_depth':2, 'eta':1, 'silent':1, 'objective':'binary:logistic'}
+        num_round = 4
+        bst = xg.train(param, d_train, num_round)
+        preds = bst.predict(d_test)
+        _, __ = self.logregobj(preds, d_test)
+        print(f'Gradient = {_}, hess = {__}')
 
 if __name__ == "__main__":
     example = DerivedMimicToNumpy()
@@ -121,6 +135,6 @@ if __name__ == "__main__":
     dict_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr, data_types=["Observation"])
     observation_data = dict_returned["Observation"]
     condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr,
-                                                                   "C0362890",
+                                                                   "C0011849",
                                                                    "Condition")
     example.init_ML_model(observation_data, condition_labels_for_target)
