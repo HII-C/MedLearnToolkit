@@ -4,6 +4,7 @@ from getpass import getpass
 from sklearn.cross_validation import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.tree import ExtraTreeClassifier
+from sklearn.metrics import accuracy_score
 import xgboost as xg
 import numpy as np
 
@@ -30,7 +31,7 @@ class DerivedMimicToNumpy:
         # We want a set of unique ID's, so we use "set" to ensure that
         return(ret_list)
 
-    def get_entries_for_paitents(self, patients, data_types=["Condition", "Observation", "Medication"]):
+    def get_LHS_for_entry_matrix(self, patients, data_types=["Condition", "Observation", "Medication"]):
         data_map = {"Observation": 0, "Condition": 1, "Medication": 2}
         # Do a dict of dict, with enties of inner dict being "{patient_id}": list(this_patients_records)
         entry_dict = {"Observation": defaultdict(list), "Condition": defaultdict(list)}
@@ -99,13 +100,16 @@ class DerivedMimicToNumpy:
         return ret_list
 
     def init_ML_model(self, data, labels):
-        #X_train, x_test, Y_train, y_test = train_test_split(data.transpose(), labels)
-        # xg_train = xg.DMatrix(x_train, y_train)
-        # regr = xg.XGBClassifier(objective="binary:logistic")
-        regr = GradientBoostingClassifier()
+        X_train, x_test, Y_train, y_test = train_test_split(data.transpose(), labels)
+        #xg_train = xg.DMatrix(x_train, y_train)
+        regr = xg.XGBClassifier(objective="binary:logistic")
+        # regr = GradientBoostingClassifier()
         # regr = ExtraTreeClassifier()
-        regr.fit(data, labels)
-        print(sorted(regr.feature_importances_[0:10], reverse=True))
+        regr.fit(X_train, Y_train)
+        y_pred = regr.predict()
+        predictions = [round(value) for value in y_pred]
+        accuracy = accuracy_score(y_test, predictions)
+        print(f"Accuracy: {accuracy * 100.0}")
 
 if __name__ == "__main__":
     example = DerivedMimicToNumpy()
@@ -114,7 +118,7 @@ if __name__ == "__main__":
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
     example.connect_der_mimic_db(der_db, "patients_as_cui")
     example_patient_id_arr = example.get_patients()
-    dict_returned = example.get_entries_for_paitents(example_patient_id_arr, data_types=["Observation"])
+    dict_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr, data_types=["Observation"])
     observation_data = dict_returned["Observation"]
     condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr,
                                                                    "C0362890",
