@@ -64,10 +64,10 @@ class DerivedMimicToNumpy:
                 base_d[code] = 0
 
             for pat_index, pat in enumerate(patients):
-                pat_d = base_d
+                pat_d = base_d.copy()
                 for key in entry_dict[data_type_][pat]:
                     pat_d[key] = 1
-                for index, val in enumerate([*pat_d.values()]):
+                for index, val in enumerate(pat_d.values()):
                     full_np_arr[pat_index][index] = val
             dict_of_nparr[data_type_] = full_np_arr
             print(full_np_arr[0:5][0:10])
