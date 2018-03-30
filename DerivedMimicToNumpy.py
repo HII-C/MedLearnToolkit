@@ -109,21 +109,23 @@ class DerivedMimicToNumpy:
     def init_ML_model(self, data, labels):
         print(f'Lenght of patient data {len(data)}')
         print(f'Lenght of label data {len(labels)}')
-        # regr = xg.XGBClassifier(objective="binary:logistic")
-        # regr.fit(X_train, Y_train)
-        # y_pred = regr.predict(x_test)
-        # predictions = [round(value) for value in y_pred]
-        # accuracy = accuracy_score(y_test, y_pred)
-        # print(f"Accuracy: {accuracy * 100.0}")
-        X_train, x_test, Y_train, y_test = train_test_split(data, labels)
-        d_train = xg.DMatrix(X_train, Y_train)
-        d_test = xg.DMatrix(x_test, y_test)
-        param = {'max_depth':2, 'eta':1, 'silent':1, 'objective':'binary:logistic'}
-        num_round = 4
-        bst = xg.train(param, d_train, num_round)
-        preds = bst.predict(d_test)
-        _, __ = self.logregobj(preds, d_test)
-        print(f'Gradient = {_}, hess = {__}')
+        X_train, x_test, Y_train, y_test = train_test_split(data, labels, test_size=.010)
+        regr = xg.XGBClassifier(objective="binary:logistic")
+        regr.fit(X_train, Y_train)
+        print(regr.feature_importances_)
+        y_pred = regr.predict(x_test)
+        predictions = [round(value) for value in y_pred]
+        accuracy = accuracy_score(y_test, predictions)
+        print(f"Accuracy: {accuracy * 100.0}")
+        
+        #d_train = xg.DMatrix(X_train, Y_train)
+        #d_test = xg.DMatrix(x_test, y_test)
+        #param = {'max_depth':7, 'eta':.2, 'objective':'binary:logistic'}
+        #num_round = 4
+        #bst = xg.train(param, d_train, num_round)
+        #preds = bst.predict(d_test)
+        #_, __ = self.logregobj(preds, d_test)
+        #print(f'Gradient = {_}, hess = {__}')
 
 if __name__ == "__main__":
     example = DerivedMimicToNumpy()
@@ -131,7 +133,7 @@ if __name__ == "__main__":
     pw = getpass(f"What is the password for the user {user}\n")
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
     example.connect_der_mimic_db(der_db, "patients_as_cui")
-    example_patient_id_arr = example.get_patients()
+    example_patient_id_arr = example.get_patients(n=20000)
     dict_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr, data_types=["Observation"])
     observation_data = dict_returned["Observation"]
     condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr,
