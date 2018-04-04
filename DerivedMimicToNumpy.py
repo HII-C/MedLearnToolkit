@@ -109,7 +109,7 @@ class DerivedMimicToNumpy:
     def init_ML_model(self, data, labels):
         print(f'Lenght of patient data {len(data)}')
         print(f'Lenght of label data {len(labels)}')
-        X_train, x_test, Y_train, y_test = train_test_split(data, labels, test_size=.010)
+        X_train, x_test, Y_train, y_test = train_test_split(data, labels, test_size=.5)
         regr = xg.XGBClassifier(objective="binary:logistic")
         regr.fit(X_train, Y_train)
         print(regr.feature_importances_)
@@ -133,10 +133,10 @@ if __name__ == "__main__":
     pw = getpass(f"What is the password for the user {user}\n")
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
     example.connect_der_mimic_db(der_db, "patients_as_cui")
-    example_patient_id_arr = example.get_patients(n=20000)
-    dict_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr, data_types=["Observation"])
-    observation_data = dict_returned["Observation"]
+    example_patient_id_arr = example.get_patients(n=10000)
+    dict_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr, data_types=["Condition"])
+    observation_data = dict_returned["Condition"]
     condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr,
-                                                                   "C0011849",
-                                                                   "Condition")
+                                                                   "C0375113",
+                                                                   "Observation")
     example.init_ML_model(observation_data, condition_labels_for_target)
