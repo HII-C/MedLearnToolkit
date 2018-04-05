@@ -109,23 +109,25 @@ class DerivedMimicToNumpy:
     def init_ML_model(self, data, labels):
         print(f'Lenght of patient data {len(data)}')
         print(f'Lenght of label data {len(labels)}')
-        X_train, x_test, Y_train, y_test = train_test_split(data, labels, test_size=.5)
-        regr = xg.XGBClassifier(objective="binary:logistic")
-        regr.fit(X_train, Y_train)
-        print(regr.feature_importances_)
-        y_pred = regr.predict(x_test)
-        predictions = [round(value) for value in y_pred]
-        accuracy = accuracy_score(y_test, predictions)
-        print(f"Accuracy: {accuracy * 100.0}")
+
+        X_train, x_test, Y_train, y_test = train_test_split(data, labels, test_size=.010)
+        # regr = xg.XGBClassifier(objective="binary:logistic")
+        # regr.fit(X_train, Y_train)
+        # print(regr.feature_importances_)
+        # y_pred = regr.predict(x_test)
+        # preds = [round(value) for value in y_pred]
         
-        #d_train = xg.DMatrix(X_train, Y_train)
-        #d_test = xg.DMatrix(x_test, y_test)
-        #param = {'max_depth':7, 'eta':.2, 'objective':'binary:logistic'}
-        #num_round = 4
-        #bst = xg.train(param, d_train, num_round)
-        #preds = bst.predict(d_test)
+        d_train = xg.DMatrix(X_train, Y_train)
+        d_test = xg.DMatrix(x_test, y_test)
+        param = {'max_depth':7, 'eta':.2, 'objective':'binary:logistic'}
+        num_round = 4
+        bst = xg.train(param, d_train, num_round)
+        preds = bst.predict(d_test)
         #_, __ = self.logregobj(preds, d_test)
         #print(f'Gradient = {_}, hess = {__}')
+
+        accuracy = accuracy_score(y_test, preds)
+        print(f"Accuracy: {accuracy * 100.0}")
 
 if __name__ == "__main__":
     example = DerivedMimicToNumpy()
