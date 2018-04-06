@@ -9,7 +9,7 @@ import xgboost as xg
 import numpy as np
 
 class XgBoostModel:
-    def __init__(self, lhs_type, rhs_type):
+    def __init__(self, lhs_type, rhs_type, target=None):
         self.lhs_type = lhs_type
         self.rhs_type = rhs_type
         self.der_mimic_conn = None
@@ -18,7 +18,8 @@ class XgBoostModel:
         self.universe_of_codes = dict()
         self.X_train, self.x_test, self.Y_train, self.y_test = (None, None, None, None)
         self.model = None
-        self.target = None
+        if target is not None: self.target = target
+        else: self.target = None
 
     def connect_der_mimic_db(self, database, table_name):
         self.der_mimic_conn = sql.connect(**database)
@@ -54,7 +55,7 @@ class XgBoostModel:
                     SOURCE = {data_map[self.lhs_type]}"""
         self.der_mimic_cur.execute(exec_str)
         entries = self.der_mimic_cur.fetchall()
-        if (self.lhs_type == self.rhs_type) and (self.target is not None):
+        if (self.lhs_type == self.rhs_type) and (self.target != None):
             self.universe_of_codes[self.lhs_type] = set([x[1] for x in entries])
             try:
                 self.universe_of_codes[self.lhs_type].remove(self.target)
@@ -62,10 +63,18 @@ class XgBoostModel:
                 raise ValueError(f"Target defined ({self.target}) not in universe of codes, impossible to model.")
         elif (self.lhs_type == self.rhs_type) and (self.target is None):
             raise ValueError(f"Target of class must be defined for matching LHS and RHS types (currently {self.rhs_type})")
+        else:
+            self.universe_of_codes[self.lhs_type] = set([x[1] for x in entries])
 
         for entry in entries:
-            entry_dict[self.lhs_type][entry[0]].append(entry[1])
-        
+            if (self.lhs_type == self.rhs_type):
+                if (entry[1] != self.target):
+                    entry_dict[self.lhs_type][entry[0]].append(entry[1])
+                else: continue
+            else:
+                entry_dict[self.lhs_type][entry[0]].append(entry[1])       
+        print(self.lhs_type)
+        print(list(self.universe_of_codes.keys()))
         # Use X = codes, Y = patients, set dtype to smallest int since binary but int needed for ML
         full_np_arr = np.ndarray(shape=(len(patients),len(self.universe_of_codes[self.lhs_type])), dtype=np.int8)
         base_d = dict()
@@ -141,13 +150,13 @@ class XgBoostModel:
 
 
 if __name__ == "__main__":
-    example = XgBoostModel("Observation", "Condition")
+    example = XgBoostModel("Observation", "Condition", "C0375113")
     user = 'root'
     pw = getpass(f"Enter password for the user \'{user}\': ")
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
     example.connect_der_mimic_db(der_db, "patients_as_cui")
     example_patient_id_arr = example.get_patients(n=10000)
     lhs_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr)
-    condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr, "C0375113")
+    condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr)
     example.init_xg_gtb(lhs_returned, condition_labels_for_target)
     example.prediction_acc()
