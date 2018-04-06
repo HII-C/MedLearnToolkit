@@ -8,13 +8,17 @@ from sklearn.metrics import accuracy_score
 import xgboost as xg
 import numpy as np
 
-class DerivedMimicToNumpy:
-    def __init__(self):
+class XgBoostModel:
+    def __init__(self, lhs_type, rhs_type):
+        self.lhs_type = lhs_type
+        self.rhs_type = rhs_type
         self.der_mimic_conn = None
         self.der_mimic_cur = None
         self.der_mimic_table = str
         self.universe_of_codes = dict()
+        self.X_train, self.x_test, self.Y_train, self.y_test = (None, None, None, None)
         self.model = None
+        self.target = str
 
     def connect_der_mimic_db(self, database, table_name):
         self.der_mimic_conn = sql.connect(**database)
@@ -75,8 +79,9 @@ class DerivedMimicToNumpy:
         print("LHS for patient data matrix formed.")
         return dict_of_nparr
     
-    def get_RHS_for_entry_matrix(self, patients, target, target_type):
+    def get_RHS_for_entry_matrix(self, patients, target):
         data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
+        self.target = target
         labels = defaultdict(lambda: 0)
         # target_col = list(self.universe_of_codes[target_type]).index(target)
         exec_str = f"""
@@ -84,7 +89,7 @@ class DerivedMimicToNumpy:
                         FROM
                     derived.{self.der_mimic_table}
                         WHERE
-                    SOURCE = {data_map[target_type]} and
+                    SOURCE = {data_map[self.rhs_type]} and
                     CUI = \"{target}\" and
                     SUBJECT_ID in {tuple(patients)}
                     """
@@ -107,28 +112,30 @@ class DerivedMimicToNumpy:
         hess = preds * (1.0 - preds)
         return grad, hess
 
-    def init_xg_gtb(self, lhs_matrix, rhs_matrix, lhs_type, rhs_type):
-        
-        X_train, x_test, Y_train, y_test = train_test_split(lhs_matrix, rhs_matrix, test_size=.010)
-        print(f"Data split into {} train:test. Creating model now. \n Accuracy will be reported upon completion.")
-        d_train = xg.DMatrix(X_train, Y_train, feature_names=list(self.universe_of_codes[lhs_type]))
-        d_test = xg.DMatrix(x_test, y_test, feature_names=list(self.universe_of_codes[lhs_type]))
+    def init_xg_gtb(self, lhs_matrix, rhs_matrix):
+        split_size = .010
+        self.X_train, self.x_test, self.Y_train, self.y_test = train_test_split(lhs_matrix, rhs_matrix, test_size=split_size)
+        print(f"Data split into {split_size} train:test. Creating model now.")
+        d_train = xg.DMatrix(self.X_train, self.Y_train, feature_names=list(self.universe_of_codes[self.lhs_type]))
         param = {'max_depth':7, 'eta':.2, 'objective':'binary:logistic'}
         num_round = 4
-        bst = xg.train(param, d_train, num_round)
-
-        y_preds = bst.predict(d_test)
+        self.model = xg.train(param, d_train, num_round)
+        print("Model creation is finished.")
+    
+    def prediction_acc(self):
+        print("Predicting model accuracy over ")
+        d_test = xg.DMatrix(self.x_test, self.y_test, feature_names=list(self.universe_of_codes[self.lhs_type]))
+        y_pred = self.model.predict(d_test)
         preds = [round(value) for value in y_pred] 
-
-        accuracy = accuracy_score(y_test, preds)
+        accuracy = accuracy_score(self.y_test, preds)
         print(f"Accuracy: {accuracy * 100.0}")
         #_, __ = self.logregobj(preds, d_test)
         #print(f'Gradient = {_}, hess = {__}')
 
-    def semrep_feat_select(self, lhs_matrix, rhs_matrix, lhs_type, rhs_type):
+    # def semrep_feat_select(self, lhs_matrix, rhs_matrix, lhs_type, rhs_type):
 
 if __name__ == "__main__":
-    example = DerivedMimicToNumpy()
+    example = XgBoostModel("Observation", "Condition")
     user = 'root'
     pw = getpass(f"What is the password for the user {user}\n")
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
@@ -136,7 +143,5 @@ if __name__ == "__main__":
     example_patient_id_arr = example.get_patients(n=10000)
     dict_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr, data_types=["Condition"])
     observation_data = dict_returned["Condition"]
-    condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr,
-                                                                   "C0375113",
-                                                                   "Observation")
-    example.init_xg_gtb(observation_data, condition_labels_for_target, "Observation", "Condition")
+    condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr, "C0375113")
+    example.init_xg_gtb(observation_data, condition_labels_for_target)
