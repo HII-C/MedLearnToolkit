@@ -10,10 +10,11 @@ import numpy as np
 
 class DerivedMimicToNumpy:
     def __init__(self):
-        self.der_mimic_conn = None
-        self.der_mimic_cur = None
-        self.der_mimic_table = None
+        self.der_mimic_conn = sql.connection()
+        self.der_mimic_cur = sql.cursors.BaseCursor()
+        self.der_mimic_table = str
         self.universe_of_codes = dict()
+        self.model = None
 
     def connect_der_mimic_db(self, database, table_name):
         self.der_mimic_conn = sql.connect(**database)
@@ -32,7 +33,7 @@ class DerivedMimicToNumpy:
         return(ret_list)
 
     def get_LHS_for_entry_matrix(self, patients, data_types=["Condition", "Observation", "Medication"]):
-        data_map = {"Observation": 0, "Condition": 1, "Medication": 2}
+        data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
         # Do a dict of dict, with enties of inner dict being "{patient_id}": list(this_patients_records)
         entry_dict = {"Observation": defaultdict(list), "Condition": defaultdict(list)}
         print(len(patients))
@@ -75,7 +76,7 @@ class DerivedMimicToNumpy:
         return dict_of_nparr
     
     def get_RHS_for_entry_matrix(self, patients, target, target_type):
-        data_map = {"Observation": 0, "Condition": 1, "Medication": 2}
+        data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
         labels = defaultdict(lambda: 0)
         # target_col = list(self.universe_of_codes[target_type]).index(target)
         exec_str = f"""
@@ -106,28 +107,25 @@ class DerivedMimicToNumpy:
         hess = preds * (1.0 - preds)
         return grad, hess
 
-    def init_ML_model(self, data, labels):
-        print(f'Lenght of patient data {len(data)}')
-        print(f'Lenght of label data {len(labels)}')
-
-        X_train, x_test, Y_train, y_test = train_test_split(data, labels, test_size=.010)
-        # regr = xg.XGBClassifier(objective="binary:logistic")
-        # regr.fit(X_train, Y_train)
-        # print(regr.feature_importances_)
-        # y_pred = regr.predict(x_test)
-        # preds = [round(value) for value in y_pred]
+    def init_xg_gtb(self, lhs_matrix, rhs_matrix, lhs_type, rhs_type):
+        X_train, x_test, Y_train, y_test = train_test_split(lhs_matrix, rhs_matrix, test_size=.010)
         
-        d_train = xg.DMatrix(X_train, Y_train)
-        d_test = xg.DMatrix(x_test, y_test)
+        d_train = xg.DMatrix(X_train, Y_train, feature_names=list(self.universe_of_codes[lhs_type].keys()))
+        d_test = xg.DMatrix(x_test, y_test, feature_names=list(self.universe_of_codes[lhs_type].keys()))
         param = {'max_depth':7, 'eta':.2, 'objective':'binary:logistic'}
         num_round = 4
         bst = xg.train(param, d_train, num_round)
-        preds = bst.predict(d_test)
-        #_, __ = self.logregobj(preds, d_test)
-        #print(f'Gradient = {_}, hess = {__}')
+
+        y_preds = bst.predict(d_test)
+        preds = [round(value) for value in y_pred] 
 
         accuracy = accuracy_score(y_test, preds)
         print(f"Accuracy: {accuracy * 100.0}")
+        #_, __ = self.logregobj(preds, d_test)
+        #print(f'Gradient = {_}, hess = {__}')
+
+    def semrep_feat_select(self, lhs_matrix, rhs_matrix, lhs_type, rhs_type):
+        
 
 if __name__ == "__main__":
     example = DerivedMimicToNumpy()
@@ -141,4 +139,4 @@ if __name__ == "__main__":
     condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr,
                                                                    "C0375113",
                                                                    "Observation")
-    example.init_ML_model(observation_data, condition_labels_for_target)
+    example.init_xg_gtb(observation_data, condition_labels_for_target)

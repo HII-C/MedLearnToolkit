@@ -47,6 +47,6 @@ if __name__ == "__main__":
 
     mimic_db = {'user': user, 'db': 'mimic', 'host': 'db01.healthcreek.org', 'password': pw}
 
-    example = LabEventsWithDiagnosisICD()
+    example = LabEventsWithDiagnosesICD()
     example.connect_mimic_db(mimic_db)
     example.create_derived('LabEventsWithDiagnosesICD')
