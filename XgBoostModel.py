@@ -29,58 +29,54 @@ class XgBoostModel:
         self.der_mimic_cur.execute(f"SELECT DISTINCT SUBJECT_ID FROM {self.der_mimic_table} limit {n}")
         ret_list = list()
         patients = self.der_mimic_cur.fetchall()
-        print(len(patients))
         # Have to do this because fetchall() returns a list of tuples
         for patient_id in patients:
             ret_list.append(patient_id[0])
         # We want a set of unique ID's, so we use "set" to ensure that
         return(ret_list)
 
-    def get_LHS_for_entry_matrix(self, patients, data_types=["Condition", "Observation", "Medication"]):
+    def get_LHS_for_entry_matrix(self, patients):
         data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
         # Do a dict of dict, with enties of inner dict being "{patient_id}": list(this_patients_records)
         entry_dict = {"Observation": defaultdict(list), "Condition": defaultdict(list)}
-        print(f"Loaded {len(patients)} total patients, forming LHS now.")
+        print(f"Loaded {len(patients)} total patients, forming LHS of type {self.lhs_type} now.")
         # Hold the data_types NumPy arrays together but distinct and clearly identified
         dict_of_nparr = dict()
-        # So we can iterate even if the non-default input is just a string
-        if type(data_types) is str:
-            data_types = [data_types] 
-        for data_type_ in data_types:
-            # Need to do few large instead of many small, aka CANNOT DO 1 PER PATIENT ID
-            # Selects take a long time to process so we must minimize the number of them
-            exec_str = f"""
-                        SELECT SUBJECT_ID, CUI 
-                            FROM 
-                        derived.{self.der_mimic_table} 
-                            WHERE 
-                        SUBJECT_ID in {tuple(patients)} and 
-                        SOURCE = {data_map[data_type_]}"""
-            self.der_mimic_cur.execute(exec_str)
-            entries = self.der_mimic_cur.fetchall()
-            self.universe_of_codes[data_type_] = set([x[1] for x in entries])
-            for entry in entries:
-                entry_dict[data_type_][entry[0]].append(entry[1])
-            
-            # Use X = codes, Y = patients, set dtype to smallest int since binary but int needed for ML
-            full_np_arr = np.ndarray(shape=(len(patients),len(self.universe_of_codes[data_type_])), dtype=np.int8)
-            base_d = dict()
-            for code in self.universe_of_codes[data_type_]:
-                base_d[code] = 0
-
-            for pat_index, pat in enumerate(patients):
-                pat_d = base_d.copy()
-                for key in entry_dict[data_type_][pat]:
-                    pat_d[key] = 1
-                for index, val in enumerate(pat_d.values()):
-                    full_np_arr[pat_index][index] = val
-            dict_of_nparr[data_type_] = full_np_arr
-            print(full_np_arr[0:5][0:10])
+        
+        # Need to do few large instead of many small, aka CANNOT DO 1 PER PATIENT ID
+        # Selects take a long time to process so we must minimize the number of them
+        exec_str = f"""
+                    SELECT SUBJECT_ID, CUI 
+                        FROM 
+                    derived.{self.der_mimic_table} 
+                        WHERE 
+                    SUBJECT_ID in {tuple(patients)} and 
+                    SOURCE = {data_map[self.lhs_type]}"""
+        self.der_mimic_cur.execute(exec_str)
+        entries = self.der_mimic_cur.fetchall()
+        self.universe_of_codes[self.lhs_type] = set([x[1] for x in entries])
+        for entry in entries:
+            entry_dict[self.lhs_type][entry[0]].append(entry[1])
+        
+        # Use X = codes, Y = patients, set dtype to smallest int since binary but int needed for ML
+        full_np_arr = np.ndarray(shape=(len(patients),len(self.universe_of_codes[self.lhs_type])), dtype=np.int8)
+        base_d = dict()
+        for code in self.universe_of_codes[self.lhs_type]:
+            base_d[code] = 0
+        # Copy the single instance of the dict, so we don't modify the base
+        # Important not to reform 1k+ attributes for every patient (gets expensive)
+        for pat_index, pat in enumerate(patients):
+            pat_d = base_d.copy()
+            for key in entry_dict[self.lhs_type][pat]:
+                pat_d[key] = 1
+            for index, val in enumerate(pat_d.values()):
+                full_np_arr[pat_index][index] = val
         print("LHS for patient data matrix formed.")
-        return dict_of_nparr
+        return full_np_arr
     
     def get_RHS_for_entry_matrix(self, patients, target):
         data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
+        print(f"Forming RHS of type {self.rhs_type} now.")
         self.target = target
         labels = defaultdict(lambda: 0)
         # target_col = list(self.universe_of_codes[target_type]).index(target)
@@ -141,7 +137,6 @@ if __name__ == "__main__":
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
     example.connect_der_mimic_db(der_db, "patients_as_cui")
     example_patient_id_arr = example.get_patients(n=10000)
-    dict_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr, data_types=["Condition"])
-    observation_data = dict_returned["Condition"]
+    lhs_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr)
     condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr, "C0375113")
-    example.init_xg_gtb(observation_data, condition_labels_for_target)
+    example.init_xg_gtb(lhs_returned, condition_labels_for_target)
