@@ -109,7 +109,7 @@ class XgBoostModel:
         return grad, hess
 
     def init_xg_gtb(self, lhs_matrix, rhs_matrix):
-        split_size = .010
+        split_size = .1
         self.X_train, self.x_test, self.Y_train, self.y_test = train_test_split(lhs_matrix, rhs_matrix, test_size=split_size)
         print(f"Data split into {split_size} train:test. Creating model now.")
         d_train = xg.DMatrix(self.X_train, self.Y_train, feature_names=list(self.universe_of_codes[self.lhs_type]))
@@ -119,12 +119,12 @@ class XgBoostModel:
         print("Model creation is finished.")
     
     def prediction_acc(self):
-        print("Predicting model accuracy over ")
+        print(f"Predicting model accuracy over target: {self.target}")
         d_test = xg.DMatrix(self.x_test, self.y_test, feature_names=list(self.universe_of_codes[self.lhs_type]))
         y_pred = self.model.predict(d_test)
         preds = [round(value) for value in y_pred] 
         accuracy = accuracy_score(self.y_test, preds)
-        print(f"Accuracy: {accuracy * 100.0}")
+        print(f"Accuracy in {len(self.x_test)} test cases = {accuracy * 100.0}")
         #_, __ = self.logregobj(preds, d_test)
         #print(f'Gradient = {_}, hess = {__}')
 
