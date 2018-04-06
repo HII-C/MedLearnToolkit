@@ -18,7 +18,7 @@ class XgBoostModel:
         self.universe_of_codes = dict()
         self.X_train, self.x_test, self.Y_train, self.y_test = (None, None, None, None)
         self.model = None
-        self.target = str
+        self.target = None
 
     def connect_der_mimic_db(self, database, table_name):
         self.der_mimic_conn = sql.connect(**database)
@@ -54,7 +54,15 @@ class XgBoostModel:
                     SOURCE = {data_map[self.lhs_type]}"""
         self.der_mimic_cur.execute(exec_str)
         entries = self.der_mimic_cur.fetchall()
-        self.universe_of_codes[self.lhs_type] = set([x[1] for x in entries])
+        if (self.lhs_type == self.rhs_type) and (self.target is not None):
+            self.universe_of_codes[self.lhs_type] = set([x[1] for x in entries])
+            try:
+                self.universe_of_codes[self.lhs_type].remove(self.target)
+            except:
+                raise ValueError(f"Target defined ({self.target}) not in universe of codes, impossible to model.")
+        elif (self.lhs_type == self.rhs_type) and (self.target is None):
+            raise ValueError(f"Target of class must be defined for matching LHS and RHS types (currently {self.rhs_type})")
+
         for entry in entries:
             entry_dict[self.lhs_type][entry[0]].append(entry[1])
         
@@ -74,10 +82,11 @@ class XgBoostModel:
         print("LHS for patient data matrix formed.")
         return full_np_arr
     
-    def get_RHS_for_entry_matrix(self, patients, target):
+    def get_RHS_for_entry_matrix(self, patients, target=None):
         data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
         print(f"Forming RHS of type {self.rhs_type} now.")
-        self.target = target
+        if target is not None:
+            self.target = target
         labels = defaultdict(lambda: 0)
         # target_col = list(self.universe_of_codes[target_type]).index(target)
         exec_str = f"""
@@ -128,7 +137,8 @@ class XgBoostModel:
         #_, __ = self.logregobj(preds, d_test)
         #print(f'Gradient = {_}, hess = {__}')
 
-    # def semrep_feat_select(self, lhs_matrix, rhs_matrix, lhs_type, rhs_type):
+    # def semrep_feat_select(self, lhs_matrix, rhs_matrix):
+
 
 if __name__ == "__main__":
     example = XgBoostModel("Observation", "Condition")
