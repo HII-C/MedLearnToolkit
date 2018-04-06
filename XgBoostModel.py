@@ -133,10 +133,11 @@ class XgBoostModel:
 if __name__ == "__main__":
     example = XgBoostModel("Observation", "Condition")
     user = 'root'
-    pw = getpass(f"What is the password for the user {user}\n")
+    pw = getpass(f"Enter password for the user \'{user}\': ")
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
     example.connect_der_mimic_db(der_db, "patients_as_cui")
     example_patient_id_arr = example.get_patients(n=10000)
     lhs_returned = example.get_LHS_for_entry_matrix(example_patient_id_arr)
     condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr, "C0375113")
     example.init_xg_gtb(lhs_returned, condition_labels_for_target)
+    example.prediction_acc()
