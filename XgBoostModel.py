@@ -10,8 +10,8 @@ import numpy as np
 
 class DerivedMimicToNumpy:
     def __init__(self):
-        self.der_mimic_conn = sql.connection()
-        self.der_mimic_cur = sql.cursors.BaseCursor()
+        self.der_mimic_conn = None
+        self.der_mimic_cur = None
         self.der_mimic_table = str
         self.universe_of_codes = dict()
         self.model = None
@@ -36,7 +36,7 @@ class DerivedMimicToNumpy:
         data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
         # Do a dict of dict, with enties of inner dict being "{patient_id}": list(this_patients_records)
         entry_dict = {"Observation": defaultdict(list), "Condition": defaultdict(list)}
-        print(len(patients))
+        print(f"Loaded {len(patients)} total patients, forming LHS now.")
         # Hold the data_types NumPy arrays together but distinct and clearly identified
         dict_of_nparr = dict()
         # So we can iterate even if the non-default input is just a string
@@ -72,7 +72,7 @@ class DerivedMimicToNumpy:
                     full_np_arr[pat_index][index] = val
             dict_of_nparr[data_type_] = full_np_arr
             print(full_np_arr[0:5][0:10])
-        print("NumPy arrays of patient data formed!")
+        print("LHS for patient data matrix formed.")
         return dict_of_nparr
     
     def get_RHS_for_entry_matrix(self, patients, target, target_type):
@@ -108,10 +108,11 @@ class DerivedMimicToNumpy:
         return grad, hess
 
     def init_xg_gtb(self, lhs_matrix, rhs_matrix, lhs_type, rhs_type):
-        X_train, x_test, Y_train, y_test = train_test_split(lhs_matrix, rhs_matrix, test_size=.010)
         
-        d_train = xg.DMatrix(X_train, Y_train, feature_names=list(self.universe_of_codes[lhs_type].keys()))
-        d_test = xg.DMatrix(x_test, y_test, feature_names=list(self.universe_of_codes[lhs_type].keys()))
+        X_train, x_test, Y_train, y_test = train_test_split(lhs_matrix, rhs_matrix, test_size=.010)
+        print(f"Data split into {} train:test. Creating model now. \n Accuracy will be reported upon completion.")
+        d_train = xg.DMatrix(X_train, Y_train, feature_names=list(self.universe_of_codes[lhs_type]))
+        d_test = xg.DMatrix(x_test, y_test, feature_names=list(self.universe_of_codes[lhs_type]))
         param = {'max_depth':7, 'eta':.2, 'objective':'binary:logistic'}
         num_round = 4
         bst = xg.train(param, d_train, num_round)
@@ -125,7 +126,6 @@ class DerivedMimicToNumpy:
         #print(f'Gradient = {_}, hess = {__}')
 
     def semrep_feat_select(self, lhs_matrix, rhs_matrix, lhs_type, rhs_type):
-        
 
 if __name__ == "__main__":
     example = DerivedMimicToNumpy()
@@ -139,4 +139,4 @@ if __name__ == "__main__":
     condition_labels_for_target = example.get_RHS_for_entry_matrix(example_patient_id_arr,
                                                                    "C0375113",
                                                                    "Observation")
-    example.init_xg_gtb(observation_data, condition_labels_for_target)
+    example.init_xg_gtb(observation_data, condition_labels_for_target, "Observation", "Condition")
