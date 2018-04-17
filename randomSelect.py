@@ -15,7 +15,7 @@ class randomSelect(object):
 
     # gets random results and stores in table rands in derived database
     def select_random_rows(self, accesstable, requestedColumns, randNum):
-        exec_str = f"""
+        exec_str = f'''
                         DELIMITER $$
                         DROP PROCEDURE IF EXISTS get_rands$$
                         CREATE PROCEDURE get_rands(IN cnt INT)
@@ -46,7 +46,7 @@ class randomSelect(object):
                         
                         CALL get_rands({randNum});
         
-                 """
+                 '''
         self.der_cur.execute(exec_str)
         self.der_conn.commit()
 
