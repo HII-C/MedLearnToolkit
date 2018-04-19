@@ -1,10 +1,11 @@
-import MySQLdb as sql
-from collections import defaultdict
-from getpass import getpass
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.tree import ExtraTreeClassifier
 from sklearn.metrics import accuracy_score
+from RandomSelect import RandomSelect
+from collections import defaultdict
+from getpass import getpass
+import MySQLdb as sql
 import xgboost as xg
 import numpy as np
 
@@ -24,9 +25,17 @@ class XgBoost:
         self.der_mimic_table = table_name
 
     def get_patients(self, n=1000):
-        self.der_mimic_cur.execute(f"SELECT DISTINCT SUBJECT_ID FROM {self.der_mimic_table} limit {n}")
-        ret_list = list()
+        rand_rows = RandomSelect()
+        # rand_rows.connect_der_db(
+        # {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw})
+        rand_rows.der_conn = self.der_mimic_conn
+        rand_rows.der_cur = self.der_mimic_cur
+        rand_rows.der_table_name = "rand"
+        rand_rows.select_random_rows(self.der_mimic_table, "not used rn", n)
+        # self.der_mimic_cur.execute(f"SELECT DISTINCT SUBJECT_ID FROM {self.der_mimic_table} limit {n}")
+        self.der_mimic_cur.execute(f"SELECT DISTINCT SUBJECT_ID FROM {rand_rows.der_table_name} limit {n}")
         patients = self.der_mimic_cur.fetchall()
+        ret_list = list()
         # Have to do this because fetchall() returns a list of tuples
         for patient_id in patients:
             ret_list.append(patient_id[0])
