@@ -2,12 +2,12 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.tree import ExtraTreeClassifier
 from sklearn.metrics import accuracy_score
-from RandomSelect import RandomSelect
 from collections import defaultdict
 from getpass import getpass
 import MySQLdb as sql
 import xgboost as xg
 import numpy as np
+import random
 
 class XgBoost:
     def __init__(self, lhs_type, rhs_type, target):
@@ -18,6 +18,7 @@ class XgBoost:
         self.target = target
         self.lhs_type = lhs_type
         self.rhs_type = rhs_type
+        self.patient_index_table = None
 
     def connect_der_mimic_db(self, database, table_name):
         self.der_mimic_conn = sql.connect(**database)
@@ -25,20 +26,23 @@ class XgBoost:
         self.der_mimic_table = table_name
 
     def get_patients(self, n=1000):
-        rand_rows = RandomSelect()
-        # rand_rows.connect_der_db(
-        # {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw})
-        rand_rows.der_conn = self.der_mimic_conn
-        rand_rows.der_cur = self.der_mimic_cur
-        rand_rows.der_table_name = "rand"
-        rand_rows.select_random_rows(self.der_mimic_table, "not used rn", n)
+        # 46516 SUBJECT_ID's in table patients_as_index
+        # ("SELECT COUNT(*) from derived.patients_as_index") if you want to verify
         # self.der_mimic_cur.execute(f"SELECT DISTINCT SUBJECT_ID FROM {self.der_mimic_table} limit {n}")
-        self.der_mimic_cur.execute(f"SELECT DISTINCT SUBJECT_ID FROM {rand_rows.der_table_name} limit {n}")
+        self.patient_index_table = "patients_as_index"
+        index_list = tuple(random.sample(range(0, 46516), n))
+        exec_str = f"""
+                    SELECT SUBJECT_ID FROM 
+                        {self.patient_index_table}
+                    WHERE 
+                        rand_id in {index_list}"""
+        self.der_mimic_cur.execute(exec_str)
         patients = self.der_mimic_cur.fetchall()
         ret_list = list()
         # Have to do this because fetchall() returns a list of tuples
         for patient_id in patients:
             ret_list.append(patient_id[0])
+        print(f"Selected {n} patients")
         # We want a set of unique ID's, so we use "set" to ensure that
         return ret_list
 
@@ -48,6 +52,7 @@ class XgBoost:
         entry_dict = {"Observation": defaultdict(list), "Condition": defaultdict(list)}
         # Hold the data_types NumPy arrays together but distinct and clearly identified
         dict_of_nparr = dict()
+        print("Forming lefthand side of patient entry matrix.")
         # So we can iterate even if the non-default input is just a string
         # Need to do few large instead of many small, aka CANNOT DO 1 PER PATIENT ID
         # Selects take a long time to process so we must minimize the number of them
@@ -77,13 +82,14 @@ class XgBoost:
             for index, val in enumerate(pat_d.values()):
                 full_np_arr[pat_index][index] = val
         print(full_np_arr[0:5][0:10])
-        print("NumPy arrays of patient data formed!")
+        print("Lefthand side of patient entry matrix formation complete.")
         return full_np_arr
-    
+
     def get_RHS_for_entry_matrix(self, patients):
         data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
         labels = defaultdict(lambda: 0)
         # target_col = list(self.universe_of_codes[target_type]).index(target)
+        print("Forming righthand side of patient entry matrix.")
         exec_str = f"""
                     SELECT SUBJECT_ID, CUI
                         FROM
@@ -102,7 +108,7 @@ class XgBoost:
         ret_list = list()
         for patient in patients:
             ret_list.append(labels[patient])
-        print("Right hand side of matrix formed")
+        print("Righthand side of patient entry matrix formation complete.")
         return ret_list
 
     def logregobj(self, preds, dtrain):
@@ -115,6 +121,7 @@ class XgBoost:
     def init_xg_gtb(self, lhs_matrix, rhs_matrix):
         split_size = .5
         self.X_train, self.x_test, self.Y_train, self.y_test = train_test_split(lhs_matrix, rhs_matrix, test_size=split_size)
+        print(f"Data split into {split_size} train:test. Creating model now.")
         d_train = xg.DMatrix(self.X_train, self.Y_train, feature_names=list(self.universe_of_codes[self.lhs_type]))
         param = {'max_depth':7, 'eta':.2, 'objective':'binary:logistic'}
         num_round = 4
@@ -128,7 +135,6 @@ class XgBoost:
         # accuracy = accuracy_score(self.y_test, preds)
         # print(f"Accuracy in {len(self.x_test)} test cases = {accuracy * 100.0}")
         # /////////////////////////////////////////////////////////////////////////////
-        print(f"Data split into {split_size} train:test. Creating model now.")
         print("Model creation is finished.")
 
     def prediction_acc(self):
@@ -142,7 +148,7 @@ class XgBoost:
 if __name__ == "__main__":
     example = XgBoost("Observation", "Condition", "C0375113")
     user = 'root'
-    pw = getpass(f"What is the password for the user {user}\n")
+    pw = getpass(f"Enter password for: {user}\n")
     der_db = {'user': user, 'db': 'derived', 'host': 'db01.healthcreek.org', 'password': pw}
     example.connect_der_mimic_db(der_db, "patients_as_cui")
     example_patient_id_arr = example.get_patients(n=10000)
