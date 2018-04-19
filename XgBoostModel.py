@@ -144,6 +144,13 @@ class XgBoost:
         preds = [round(value) for value in y_pred] 
         accuracy = accuracy_score(self.y_test, preds)
         print(f"Accuracy in {len(self.x_test)} test cases = {accuracy * 100.0}")
+        return accuracy
+
+    def store_model_output(self):
+        print("Here")
+        attrib_dict = self.model.get_fscore()
+        for key in list(attrib_dict.keys()):
+            print(f"{key}: {attrib_dict[key]}")
 
 if __name__ == "__main__":
     example = XgBoost("Observation", "Condition", "C0375113")
@@ -156,3 +163,4 @@ if __name__ == "__main__":
     condition_data = example.get_RHS_for_entry_matrix(example_patient_id_arr)
     example.init_xg_gtb(observation_data, condition_data)
     example.prediction_acc()
+    example.store_model_output()
