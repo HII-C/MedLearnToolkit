@@ -51,11 +51,9 @@ class RandomSelect(object):
         self.der_conn.commit()
 
     def create_table(self, created_table_name):
-        print("Here")
         exec_str = f"DROP TABLE IF EXISTS {created_table_name}"
         self.der_cur.execute(exec_str)
         self.der_conn.commit()
-        print("There")
         exec_str = f"""
                     CREATE TABLE {created_table_name}
                     (rand_id int AUTO_INCREMENT NOT NULL, 
@@ -63,7 +61,6 @@ class RandomSelect(object):
                     PRIMARY KEY (rand_id))"""
         self.der_cur.execute(exec_str)
         self.der_conn.commit()
-        print("Fere")
         exec_str = f"""
                     INSERT INTO 
                         {created_table_name} (SUBJECT_ID) 
@@ -71,7 +68,7 @@ class RandomSelect(object):
                         DISTINCT SUBJECT_ID FROM {self.der_table_name}"""
         self.der_cur.execute(exec_str)
         self.der_conn.commit()
-        print("Dere")
+        print("Table of SUBJECT_ID ordered by ASC int created")
 
 if __name__ == "__main__":
     print("Starting")
