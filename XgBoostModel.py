@@ -144,7 +144,7 @@ class XgBoost:
         for key in list(attrib_dict.keys()):
             print(f"{key}: {attrib_dict[key]}")
             
-        def table_model_output(self):
+    def table_model_output(self):
         data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
         attrib_dict = self.model.get_fscore()
         exec_str = f"DROP TABLE IF EXISTS ml_output;"
