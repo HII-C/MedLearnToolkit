@@ -126,15 +126,7 @@ class XgBoost:
         param = {'max_depth':7, 'eta':.2, 'objective':'binary:logistic'}
         num_round = 4
         self.model = xg.train(param, d_train, num_round)
-        # /////////////////////////////////////////////////////////////////////////////
-        # regr = xg.XGBClassifier(objective="binary:logistic")
-        # regr.fit(self.X_train, self.Y_train)
-        # print(regr.feature_importances_)
-        # y_pred = regr.predict(self.x_test)
-        # preds = [round(value) for value in y_pred]
-        # accuracy = accuracy_score(self.y_test, preds)
-        # print(f"Accuracy in {len(self.x_test)} test cases = {accuracy * 100.0}")
-        # /////////////////////////////////////////////////////////////////////////////
+
         print("Model creation is finished.")
 
     def prediction_acc(self):
@@ -147,8 +139,8 @@ class XgBoost:
         return accuracy
 
     def store_model_output(self):
-        print("Here")
-        attrib_dict = self.model.get_fscore()
+        # Formal database outline for API input at "Example ML output" in the team drive
+        attrib_dict = self.model.get_score(importance_type='gain')
         for key in list(attrib_dict.keys()):
             print(f"{key}: {attrib_dict[key]}")
 
