@@ -151,7 +151,7 @@ class XgBoost:
         self.der_mimic_cur.execute(exec_str)
         self.der_mimic_conn.commit()
         exec_str = f"""CREATE TABLE ml_output (subject_code CHAR(255), object_code CHAR(255), predicate CHAR(255),
-         subject_type SMALLINT UNSIGNED, object_type SMALLINT UNSIGNED, rank_weight SMALLINT UNSIGNED, rank_gain SMALLINT UNSIGNED, rank_cov SMALLINT UNSIGNED);"""
+         subject_type TINYINT UNSIGNED, object_type TINYINT UNSIGNED, rank_weight FLOAT UNSIGNED, rank_gain FLOAT UNSIGNED, rank_cov FLOAT UNSIGNED);"""
         self.der_mimic_cur.execute(exec_str)
         self.der_mimic_conn.commit()
         for key in list(attrib_dict.keys()):
