@@ -58,6 +58,32 @@ class XgBoost:
         attrib_dict = self.model.get_score(importance_type='gain')
         for key in list(attrib_dict.keys()):
             print(f"{key}: {attrib_dict[key]}")
+            
+    def table_model_output(self):
+        data_map = {"Condition": 0, "Observation": 1, "Medication": 2}
+        attrib_dict = self.model.get_fscore()
+        exec_str = f"DROP TABLE IF EXISTS ml_output;"
+        self.der_mimic_cur.execute(exec_str)
+        self.der_mimic_conn.commit()
+        exec_str = f"""CREATE TABLE ml_output (subject_code CHAR(255), object_code CHAR(255), predicate CHAR(255),
+         subject_type TINYINT UNSIGNED, object_type TINYINT UNSIGNED, rank_weight FLOAT UNSIGNED, rank_gain FLOAT UNSIGNED, rank_cov FLOAT UNSIGNED);"""
+        self.der_mimic_cur.execute(exec_str)
+        self.der_mimic_conn.commit()
+        for key in list(attrib_dict.keys()):
+            exec_str = f"""INSERT INTO ml_output (subject_code, object_code, predicate, subject_type, object_type, rank_gain, rank_weight, rank_cov)
+            VALUES (
+                {key}, 
+                {self.target},
+                NULL, 
+                {data_map[self.lhs_type]}, 
+                {data_map[self.rhs_type]}, 
+                {attrib_dict[key]}, 
+                NULL, 
+                NULL
+            );
+                """
+            self.der_mimic_cur.execute(exec_str)
+            self.der_mimic_conn.commit()
 
 
 if __name__ == "__main__":
